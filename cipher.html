@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/sifrele — ikbal.exe</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Pacifico&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0008; --pink:#ff6eb4; --bright:#ff1f8e; --dim:#6b1a3e;
+    --mid:#9b2060; --card:#160010; --border:#3d0028;
+    --glow:rgba(255,110,180,0.3);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--pink);font-family:'Share Tech Mono',monospace;
+    min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,
+      rgba(255,110,180,0.015) 2px,rgba(255,110,180,0.015) 4px);}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:1000;
+    background:rgba(13,0,8,0.97);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--dim);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 2rem;height:56px;box-shadow:0 2px 20px rgba(255,30,140,0.15);}
+  .nav-logo{color:var(--pink);font-size:1.05rem;text-shadow:0 0 10px var(--glow);letter-spacing:2px;}
+  .nav-logo span{color:var(--bright);}
+  .nav-links{display:flex;gap:0.3rem;list-style:none;}
+  .nav-links a{font-size:0.78rem;color:var(--dim);text-decoration:none;
+    padding:0.4rem 0.85rem;border:1px solid transparent;border-radius:4px;
+    transition:all 0.2s;letter-spacing:1px;}
+  .nav-links a:hover,.nav-links a.active{color:var(--pink);border-color:var(--dim);
+    text-shadow:0 0 8px var(--glow);background:rgba(255,110,180,0.06);}
+  @media(max-width:600px){.nav-links a{font-size:0.68rem;padding:0.35rem 0.5rem;}}
+
+  /* LAYOUT */
+  .wrap{max-width:960px;margin:0 auto;padding:80px 1.5rem 3rem;}
+
+  .page-title{font-family:'Pacifico',cursive;font-size:clamp(1.8rem,5vw,3rem);
+    color:var(--bright);text-shadow:0 0 20px var(--glow),2px 3px 0 rgba(255,30,140,0.3);
+    text-align:center;margin-bottom:0.5rem;}
+  .page-sub{font-family:'Share Tech Mono',monospace;color:var(--dim);
+    text-align:center;margin-bottom:3rem;font-size:0.9rem;letter-spacing:1px;}
+
+  /* CARDS */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:2rem;}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:1.5rem;box-shadow:0 0 30px rgba(255,30,140,0.08);transition:border-color 0.2s;}
+  .card:hover{border-color:var(--mid);}
+  .card-title{color:var(--bright);font-size:1rem;letter-spacing:2px;margin-bottom:1.2rem;
+    display:flex;align-items:center;gap:0.5rem;}
+  .card-title::before{content:'[';color:var(--dim);}
+  .card-title::after{content:']';color:var(--dim);}
+
+  label{color:var(--mid);font-size:0.78rem;letter-spacing:1px;display:block;margin-bottom:0.4rem;}
+  textarea,input[type=text]{
+    width:100%;background:rgba(255,110,180,0.04);border:1px solid var(--border);
+    border-radius:6px;padding:0.7rem;color:var(--pink);font-family:'Share Tech Mono',monospace;
+    font-size:0.85rem;resize:vertical;outline:none;transition:border-color 0.2s;
+    min-height:80px;}
+  textarea:focus,input[type=text]:focus{border-color:var(--mid);}
+  textarea.output-area{color:#ffe0f5;cursor:text;}
+
+  .btn-row{display:flex;gap:0.6rem;margin:0.8rem 0;flex-wrap:wrap;}
+  button.action{background:transparent;border:1px solid var(--mid);color:var(--pink);
+    padding:0.45rem 1.1rem;border-radius:5px;font-family:'Share Tech Mono',monospace;
+    font-size:0.82rem;cursor:pointer;transition:all 0.2s;letter-spacing:1px;}
+  button.action:hover{background:rgba(255,110,180,0.1);border-color:var(--pink);
+    text-shadow:0 0 6px var(--glow);}
+  button.action.encode{border-color:var(--bright);color:var(--bright);}
+  button.action.decode{border-color:#88ffaa;color:#88ffaa;}
+  button.action.copy{border-color:var(--dim);color:var(--dim);font-size:0.75rem;}
+  button.action.copy:hover{border-color:var(--mid);color:var(--mid);}
+
+  .result-row{position:relative;}
+  .copied-msg{position:absolute;right:0;top:-1.4rem;font-size:0.75rem;
+    color:#88ffaa;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+  .copied-msg.show{opacity:1;}
+
+  /* IKBAL CIPHER */
+  .cipher-card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:2rem;box-shadow:0 0 40px rgba(255,30,140,0.12);margin-top:2rem;}
+  .cipher-header{display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem;}
+  .cipher-title{font-family:'Pacifico',cursive;font-size:clamp(1.5rem,4vw,2.2rem);
+    color:var(--bright);text-shadow:0 0 15px var(--glow);}
+  .cipher-badge{background:rgba(255,30,140,0.15);border:1px solid var(--bright);
+    border-radius:50px;padding:0.2rem 0.8rem;font-size:0.75rem;color:var(--bright);}
+  .cipher-desc{color:var(--dim);font-size:0.82rem;margin-bottom:1.5rem;line-height:1.7;}
+  .cipher-legend{background:rgba(255,110,180,0.04);border:1px solid var(--border);
+    border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.5rem;}
+  .legend-title{color:var(--mid);font-size:0.8rem;letter-spacing:2px;margin-bottom:0.8rem;}
+  .legend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:0.4rem;}
+  .legend-item{font-size:0.8rem;display:flex;align-items:center;gap:0.4rem;}
+  .legend-char{color:var(--bright);min-width:1.5ch;}
+  .legend-sym{font-size:1.1rem;}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+  @media(max-width:640px){.two-col{grid-template-columns:1fr;}}
+
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--dim);border-radius:6px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">&gt; <span>ikbal</span>.exe</div>
+  <ul class="nav-links">
+    <li><a href="index.html">~/sevgi</a></li>
+    <li><a href="cmd.html">~/terminal</a></li>
+    <li><a href="cipher.html" class="active">~/sifrele</a></li>
+    <li><a href="zaman.html">~/zaman</a></li>
+    <li><a href="ukulele.html">~/ukulele</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+  <h1 class="page-title">🔐 Şifrele</h1>
+  <p class="page-sub">// encode_decode_tools.exe — v1.0</p>
+
+  <div class="grid">
+
+    <!-- BASE64 -->
+    <div class="card">
+      <div class="card-title">Base64</div>
+      <label>Giriş:</label>
+      <textarea id="b64-in" placeholder="Metni buraya yaz..."></textarea>
+      <div class="btn-row">
+        <button class="action encode" onclick="b64Encode()">Encode ▶</button>
+        <button class="action decode" onclick="b64Decode()">◀ Decode</button>
+      </div>
+      <label>Çıkış:</label>
+      <div class="result-row">
+        <span class="copied-msg" id="b64-cp">kopyalandı ✓</span>
+        <textarea class="output-area" id="b64-out" readonly></textarea>
+        <div class="btn-row"><button class="action copy" onclick="copyOut('b64-out','b64-cp')">📋 kopyala</button></div>
+      </div>
+    </div>
+
+    <!-- HEX -->
+    <div class="card">
+      <div class="card-title">Hex</div>
+      <label>Giriş:</label>
+      <textarea id="hex-in" placeholder="Metni veya hex gir..."></textarea>
+      <div class="btn-row">
+        <button class="action encode" onclick="hexEncode()">→ Hex</button>
+        <button class="action decode" onclick="hexDecode()">← Text</button>
+      </div>
+      <label>Çıkış:</label>
+      <div class="result-row">
+        <span class="copied-msg" id="hex-cp">kopyalandı ✓</span>
+        <textarea class="output-area" id="hex-out" readonly></textarea>
+        <div class="btn-row"><button class="action copy" onclick="copyOut('hex-out','hex-cp')">📋 kopyala</button></div>
+      </div>
+    </div>
+
+    <!-- URL -->
+    <div class="card">
+      <div class="card-title">URL Encode</div>
+      <label>Giriş:</label>
+      <textarea id="url-in" placeholder="URL veya metin gir..."></textarea>
+      <div class="btn-row">
+        <button class="action encode" onclick="urlEnc()">Encode</button>
+        <button class="action decode" onclick="urlDec()">Decode</button>
+      </div>
+      <label>Çıkış:</label>
+      <div class="result-row">
+        <span class="copied-msg" id="url-cp">kopyalandı ✓</span>
+        <textarea class="output-area" id="url-out" readonly></textarea>
+        <div class="btn-row"><button class="action copy" onclick="copyOut('url-out','url-cp')">📋 kopyala</button></div>
+      </div>
+    </div>
+
+    <!-- BINARY -->
+    <div class="card">
+      <div class="card-title">Binary</div>
+      <label>Giriş:</label>
+      <textarea id="bin-in" placeholder="Metin veya binary (0 ve 1)..."></textarea>
+      <div class="btn-row">
+        <button class="action encode" onclick="binEncode()">→ Binary</button>
+        <button class="action decode" onclick="binDecode()">← Text</button>
+      </div>
+      <label>Çıkış:</label>
+      <div class="result-row">
+        <span class="copied-msg" id="bin-cp">kopyalandı ✓</span>
+        <textarea class="output-area" id="bin-out" readonly></textarea>
+        <div class="btn-row"><button class="action copy" onclick="copyOut('bin-out','bin-cp')">📋 kopyala</button></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- IKBAL CIPHER -->
+  <div class="cipher-card">
+    <div class="cipher-header">
+      <h2 class="cipher-title">💗 İkbalCipher</h2>
+      <span class="cipher-badge">gizli dil</span>
+    </div>
+    <p class="cipher-desc">Sadece ikimize ait şifreli bir dil. Her harf kalp ve çiçek emojilerine dönüşüyor. 🌸</p>
+
+    <div class="cipher-legend">
+      <div class="legend-title">// şifre tablosu</div>
+      <div class="legend-grid" id="legend-grid"></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <label>Düz Metin → İkbalCipher:</label>
+        <textarea id="ic-in" placeholder="Buraya yaz..."></textarea>
+        <div class="btn-row">
+          <button class="action encode" onclick="icEncode()">💗 Şifrele</button>
+          <button class="action decode" onclick="icDecode()">💬 Çöz</button>
+        </div>
+      </div>
+      <div>
+        <label>Çıkış:</label>
+        <div class="result-row">
+          <span class="copied-msg" id="ic-cp">kopyalandı ✓</span>
+          <textarea class="output-area" id="ic-out" readonly style="min-height:120px;font-size:1.2rem;line-height:2;"></textarea>
+          <div class="btn-row"><button class="action copy" onclick="copyOut('ic-out','ic-cp')">📋 kopyala</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── BASE64 ──
+function b64Encode(){
+  try{document.getElementById('b64-out').value=btoa(unescape(encodeURIComponent(document.getElementById('b64-in').value)));}
+  catch(e){document.getElementById('b64-out').value='Hata: '+e.message;}
+}
+function b64Decode(){
+  try{document.getElementById('b64-out').value=decodeURIComponent(escape(atob(document.getElementById('b64-in').value)));}
+  catch(e){document.getElementById('b64-out').value='Hata: Geçersiz Base64';}
+}
+
+// ── HEX ──
+function hexEncode(){
+  const t=document.getElementById('hex-in').value;
+  document.getElementById('hex-out').value=[...t].map(c=>c.charCodeAt(0).toString(16).padStart(2,'0')).join(' ');
+}
+function hexDecode(){
+  try{
+    const h=document.getElementById('hex-in').value.replace(/\s+/g,'');
+    let r='';
+    for(let i=0;i<h.length;i+=2) r+=String.fromCharCode(parseInt(h.substr(i,2),16));
+    document.getElementById('hex-out').value=r;
+  }catch(e){document.getElementById('hex-out').value='Hata: Geçersiz hex';}
+}
+
+// ── URL ──
+function urlEnc(){document.getElementById('url-out').value=encodeURIComponent(document.getElementById('url-in').value);}
+function urlDec(){
+  try{document.getElementById('url-out').value=decodeURIComponent(document.getElementById('url-in').value);}
+  catch(e){document.getElementById('url-out').value='Hata: Geçersiz URL encoding';}
+}
+
+// ── BINARY ──
+function binEncode(){
+  const t=document.getElementById('bin-in').value;
+  document.getElementById('bin-out').value=[...t].map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
+}
+function binDecode(){
+  try{
+    const b=document.getElementById('bin-in').value.trim().split(/\s+/);
+    document.getElementById('bin-out').value=b.map(n=>String.fromCharCode(parseInt(n,2))).join('');
+  }catch(e){document.getElementById('bin-out').value='Hata: Geçersiz binary';}
+}
+
+// ── COPY ──
+function copyOut(id,cpId){
+  const el=document.getElementById(id);
+  navigator.clipboard.writeText(el.value).catch(()=>{
+    el.select(); document.execCommand('copy');
+  });
+  const cp=document.getElementById(cpId);
+  cp.classList.add('show');
+  setTimeout(()=>cp.classList.remove('show'),1800);
+}
+
+// ── IKBAL CIPHER ──
+const CIPHER = {
+  'a':'❤️','b':'💕','c':'🌸','d':'🎀','e':'💗','f':'✨','g':'💖',
+  'h':'🌺','i':'💓','j':'🌷','k':'💘','l':'🎀','m':'🌼',
+  'n':'💝','o':'🌹','p':'🍀','q':'🌻','r':'💞','s':'🌟',
+  't':'💫','u':'🦋','v':'🍃','w':'🌙','x':'⭐','y':'🎶',
+  'z':'🫧',
+  ' ':'　', // ideographic space as word separator
+  '.':'💌','!':'💥',',':'🍬','?':'🤍',
+  '0':'🔮','1':'🫀','2':'💟','3':'🧿','4':'🌈','5':'☁️',
+  '6':'🌊','7':'🍓','8':'🍒','9':'🍑',
+};
+
+// reverse map
+const REV = {};
+Object.entries(CIPHER).forEach(([k,v])=>{ REV[v]=k; });
+
+// render legend
+const lg = document.getElementById('legend-grid');
+'abcdefghijklmnopqrstuvwxyz'.split('').forEach(ch=>{
+  const d=document.createElement('div'); d.className='legend-item';
+  d.innerHTML=`<span class="legend-char">${ch}</span><span>→</span><span class="legend-sym">${CIPHER[ch]}</span>`;
+  lg.appendChild(d);
+});
+
+function icEncode(){
+  const t=document.getElementById('ic-in').value.toLowerCase();
+  let out='';
+  for(const ch of t){
+    out += CIPHER[ch] !== undefined ? CIPHER[ch] : ch;
+  }
+  document.getElementById('ic-out').value=out;
+}
+
+function icDecode(){
+  // We need to match emoji sequences (many are multi-codepoint)
+  const text = document.getElementById('ic-in').value;
+  // Use Intl segmenter or regex for emoji
+  const segments = [...new Intl.Segmenter().segment(text)].map(s=>s.segment);
+  let out='';
+  for(const seg of segments){
+    if(REV[seg]!==undefined){ out+=REV[seg]==='　'?' ':REV[seg]; }
+    else { out+=seg; }
+  }
+  document.getElementById('ic-out').value=out;
+}
+</script>
+</body>
+</html>

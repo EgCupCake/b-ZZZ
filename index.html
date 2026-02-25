@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İkbal'e ❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #ff6eb4; --light-pink: #ffc2e2; --baby-pink: #fff0f8;
+    --hot-pink: #ff1f8e; --purple: #d77dff;
+    --nav-bg: rgba(26,0,16,0.96);
+    --nav-dim: #8b2252; --nav-glow: rgba(255,110,180,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--baby-pink); overflow-x:hidden;
+    cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ctext y='28' font-size='26'%3E%F0%9F%8C%B8%3C/text%3E%3C/svg%3E"),auto; }
+
+  /* ── NAV ── */
+  nav { position:fixed; top:0; left:0; right:0; z-index:1000;
+    background:var(--nav-bg); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--nav-dim);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 2rem; height:56px;
+    box-shadow:0 2px 20px rgba(255,30,140,0.2); }
+  .nav-logo { font-family:'Share Tech Mono',monospace; color:var(--pink);
+    font-size:1.05rem; text-shadow:0 0 10px var(--nav-glow); letter-spacing:2px; }
+  .nav-logo span { color:var(--hot-pink); }
+  .nav-links { display:flex; gap:0.3rem; list-style:none; }
+  .nav-links a { font-family:'Share Tech Mono',monospace; font-size:0.78rem;
+    color:var(--nav-dim); text-decoration:none; padding:0.4rem 0.85rem;
+    border:1px solid transparent; border-radius:4px; transition:all 0.2s; letter-spacing:1px; }
+  .nav-links a:hover, .nav-links a.active { color:var(--pink);
+    border-color:var(--nav-dim); text-shadow:0 0 8px var(--nav-glow); background:rgba(255,110,180,0.07); }
+  @media(max-width:600px){ .nav-links a { font-size:0.68rem; padding:0.35rem 0.5rem; } }
+
+  /* ── HERO ── */
+  .hero { min-height:100vh; padding-top:56px;
+    background:linear-gradient(135deg,#ffe0f5 0%,#ffc2e2 40%,#ffb3dc 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; inset:0;
+    background:radial-gradient(circle at 20% 80%,rgba(255,200,230,0.6) 0%,transparent 50%),
+               radial-gradient(circle at 80% 20%,rgba(215,125,255,0.3) 0%,transparent 50%); }
+  .bg-hearts { position:absolute; inset:0; pointer-events:none; }
+  .bg-heart { position:absolute; animation:floatUp linear infinite; opacity:0.4; }
+  @keyframes floatUp { 0%{transform:translateY(110vh) rotate(0);opacity:0}
+    10%{opacity:0.4} 90%{opacity:0.4} 100%{transform:translateY(-10vh) rotate(360deg);opacity:0} }
+  .hero-title { font-family:'Pacifico',cursive; font-size:clamp(3rem,10vw,7rem); color:#fff;
+    text-shadow:3px 4px 0 var(--hot-pink),6px 8px 20px rgba(255,30,140,0.3);
+    text-align:center; position:relative; z-index:1;
+    animation:bounceIn 1s cubic-bezier(0.36,.07,.19,.97) both; }
+  @keyframes bounceIn { 0%{transform:scale(0) rotate(-5deg);opacity:0}
+    60%{transform:scale(1.1) rotate(2deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+  .hero-sub { font-size:clamp(1.1rem,3vw,1.7rem); color:var(--hot-pink); margin-top:1rem;
+    font-weight:900; text-align:center; position:relative; z-index:1;
+    animation:fadeUp 1s 0.5s ease both;
+    background:rgba(255,255,255,0.5); padding:0.5rem 2rem; border-radius:50px; backdrop-filter:blur(4px); }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  .sparkle { position:absolute; font-size:1.5rem; animation:sp 2s ease-in-out infinite; pointer-events:none; }
+  @keyframes sp { 0%,100%{transform:scale(1) rotate(0);opacity:1} 50%{transform:scale(1.4) rotate(20deg);opacity:0.5} }
+  .scroll-hint { position:absolute; bottom:2rem; font-size:2rem; animation:bncHint 1.5s infinite; z-index:1; }
+  @keyframes bncHint { 0%,100%{transform:translateY(0)} 50%{transform:translateY(10px)} }
+
+  /* ── LOVE SECTION ── */
+  .love-section { min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:4rem 1rem 3rem;
+    background:linear-gradient(180deg,#ffc2e2 0%,#ffe0f5 30%,#fff0f8 100%);
+    position:relative; overflow:hidden; }
+  .sec-title { font-family:'Pacifico',cursive; font-size:clamp(1.8rem,5vw,3.2rem);
+    color:var(--hot-pink); text-align:center; margin-bottom:0.8rem;
+    text-shadow:2px 3px 0 rgba(255,30,140,0.2); }
+  .sec-sub { font-size:1.05rem; color:#c06090; margin-bottom:2.5rem; text-align:center; font-weight:700; }
+  #heart-btn { background:none; border:none; cursor:pointer; font-size:5rem;
+    line-height:1; filter:drop-shadow(0 4px 10px rgba(255,30,140,0.4));
+    user-select:none; -webkit-user-select:none; transition:font-size 0.2s ease; }
+  #heart-btn:active { transform:scale(0.9); }
+  #click-text { font-family:'Pacifico',cursive; font-size:1.3rem; color:var(--hot-pink);
+    text-align:center; min-height:3rem; margin-top:0.5rem; }
+  #love-meter { width:min(400px,90vw); height:18px; background:rgba(255,182,220,0.4);
+    border-radius:50px; overflow:hidden; border:2px solid var(--light-pink); }
+  #love-fill { height:100%; width:0%; background:linear-gradient(90deg,#ff6eb4,#ff1f8e,#d77dff);
+    background-size:200% 100%; border-radius:50px; transition:width 0.3s ease;
+    animation:shimmer 2s linear infinite; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* particles */
+  .particle { position:fixed; pointer-events:none; font-size:1.2rem; z-index:9999;
+    animation:pFly 1s ease-out forwards; }
+  @keyframes pFly { 0%{opacity:1;transform:translate(0,0) scale(1)}
+    100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0.3)} }
+
+  /* explosion */
+  .boom { position:fixed; inset:0; z-index:99999; display:none;
+    flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(255,20,120,0.18); backdrop-filter:blur(3px); }
+  .boom-msg { font-family:'Pacifico',cursive; font-size:clamp(2rem,8vw,5rem); color:#fff;
+    text-shadow:0 0 30px var(--hot-pink),3px 3px 0 #d77dff;
+    text-align:center; padding:2rem; animation:popIn 0.5s cubic-bezier(0.36,.07,.19,.97) both; }
+  @keyframes popIn { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+  .boom-hearts { font-size:2.5rem; margin-top:1rem; letter-spacing:0.5rem; animation:wiggle 0.5s infinite; }
+  @keyframes wiggle { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+  .replay-btn { margin-top:2rem; background:#fff; color:var(--hot-pink);
+    border:3px solid var(--hot-pink); border-radius:50px; padding:0.8rem 2.5rem;
+    font-family:'Nunito',sans-serif; font-size:1.2rem; font-weight:900; cursor:pointer; transition:all 0.2s; }
+  .replay-btn:hover { background:var(--hot-pink); color:#fff; transform:scale(1.05); }
+
+  .deco-dot { position:absolute; border-radius:50%; background:rgba(255,110,180,0.1); pointer-events:none; }
+  ::-webkit-scrollbar{width:8px} ::-webkit-scrollbar-track{background:#fff0f8}
+  ::-webkit-scrollbar-thumb{background:var(--pink);border-radius:10px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">&gt; <span>ikbal</span>.exe</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">~/sevgi</a></li>
+    <li><a href="cmd.html">~/terminal</a></li>
+    <li><a href="cipher.html">~/sifrele</a></li>
+    <li><a href="zaman.html">~/zaman</a></li>
+    <li><a href="ukulele.html">~/ukulele</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="bg-hearts" id="bgH"></div>
+  <div class="sparkle" style="top:10%;left:10%">✨</div>
+  <div class="sparkle" style="top:15%;right:12%;animation-delay:.7s">⭐</div>
+  <div class="sparkle" style="bottom:22%;left:8%;animation-delay:1.2s">🌟</div>
+  <div class="sparkle" style="bottom:16%;right:10%;animation-delay:.3s">✨</div>
+  <div class="sparkle" style="top:42%;left:5%;animation-delay:.9s">🎀</div>
+  <div class="sparkle" style="top:36%;right:5%;animation-delay:1.5s">🎀</div>
+  <h1 class="hero-title">İkbal'e 🌸</h1>
+  <p class="hero-sub">💕 Seni çok seviyorum 💕</p>
+  <div class="scroll-hint">💗</div>
+</section>
+
+<section class="love-section">
+  <h2 class="sec-title">İkbal'i ne kadar seviyorum? 🤔</h2>
+  <p class="sec-sub">Butona bastıkça öğreneceksin! 👇</p>
+  <button id="heart-btn" onclick="clickHeart(event)">❤️</button>
+  <div style="height:1.5rem"></div>
+  <div id="love-meter"><div id="love-fill"></div></div>
+  <p id="click-text">Kalbe bas ve gör! 💕</p>
+</section>
+
+<div class="boom" id="boom">
+  <div class="boom-msg">💥 PATLADI! 💥<br>Sevgim bu kalbe<br>sığmadı! 🫶</div>
+  <div class="boom-hearts">❤️‍🔥💗💖💝💘💕</div>
+  <button class="replay-btn" onclick="resetHeart()">Tekrar dene! 🔄</button>
+</div>
+
+<script>
+// BG hearts
+const bgH = document.getElementById('bgH');
+['❤️','💕','💗','💖','💓','🌸','🎀','✨'].forEach((e,i)=>{
+  for(let j=0;j<3;j++){
+    const h=document.createElement('div'); h.className='bg-heart'; h.textContent=e;
+    h.style.left=Math.random()*100+'vw';
+    h.style.animationDuration=(8+Math.random()*12)+'s';
+    h.style.animationDelay=(Math.random()*12)+'s';
+    h.style.fontSize=(1+Math.random()*2)+'rem';
+    bgH.appendChild(h);
+  }
+});
+
+// deco dots
+const ls = document.querySelector('.love-section');
+for(let i=0;i<18;i++){
+  const d=document.createElement('div'); d.className='deco-dot';
+  const s=30+Math.random()*120;
+  d.style.cssText=`width:${s}px;height:${s}px;top:${Math.random()*100}%;left:${Math.random()*100}%;`;
+  ls.appendChild(d);
+}
+
+let clicks=0; const MAX=20;
+const btn=document.getElementById('heart-btn');
+const fill=document.getElementById('love-fill');
+const ct=document.getElementById('click-text');
+const msgs=["Biraz seviyorum... 🤏","Hmm, biraz daha 💕","Artık daha çok! 💗",
+  "Gerçekten seviyorum 💖","Çoook seviyorum! 💓","Sonsuza kadar 🌹",
+  "Dünyalar kadar 🌍","Evrenler kadar 🌌","Kelimeler yetmez 😍",
+  "Kalbim taşıyor ❤️‍🔥","DURDURAMAM! 💥"];
+
+function clickHeart(e){
+  if(clicks>=MAX)return; clicks++;
+  fill.style.width=(clicks/MAX*100)+'%';
+  btn.style.fontSize=(5+clicks/MAX*10)+'rem';
+  btn.style.filter=`drop-shadow(0 4px ${10+clicks*3}px rgba(255,30,140,${0.3+clicks*0.03}))`;
+  ct.textContent=msgs[Math.floor(clicks/MAX*(msgs.length-1))];
+  spawn(e.clientX,e.clientY,6);
+  if(clicks>=MAX) setTimeout(boom,300);
+}
+
+function spawn(x,y,n){
+  const ep=['❤️','💕','💗','💖','✨','🌸','💘'];
+  for(let i=0;i<n;i++){
+    const p=document.createElement('div'); p.className='particle';
+    p.textContent=ep[Math.floor(Math.random()*ep.length)];
+    p.style.setProperty('--tx',(Math.random()-.5)*200+'px');
+    p.style.setProperty('--ty',-(80+Math.random()*120)+'px');
+    p.style.left=x+'px'; p.style.top=y+'px';
+    p.style.animationDuration=(0.6+Math.random()*0.6)+'s';
+    document.body.appendChild(p);
+    p.addEventListener('animationend',()=>p.remove());
+  }
+}
+
+function boom(){
+  for(let i=0;i<30;i++){
+    const p=document.createElement('div'); p.className='particle';
+    const ee=['❤️','💥','💕','✨','🌸','💖','💗','🎉','🎀'];
+    p.textContent=ee[Math.floor(Math.random()*ee.length)];
+    p.style.setProperty('--tx',(Math.random()-.5)*600+'px');
+    p.style.setProperty('--ty',(Math.random()-.5)*600+'px');
+    p.style.left='50vw'; p.style.top='50vh';
+    p.style.fontSize=(1.5+Math.random()*2)+'rem';
+    p.style.animationDuration=(0.8+Math.random()*1)+'s';
+    document.body.appendChild(p);
+    p.addEventListener('animationend',()=>p.remove());
+  }
+  document.getElementById('boom').style.display='flex';
+}
+
+function resetHeart(){
+  clicks=0; fill.style.width='0%';
+  btn.style.fontSize='5rem';
+  btn.style.filter='drop-shadow(0 4px 10px rgba(255,30,140,0.4))';
+  ct.textContent='Kalbe bas ve gör! 💕';
+  document.getElementById('boom').style.display='none';
+}
+</script>
+</body>
+</html>

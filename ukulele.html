@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/ukulele — ikbal.exe</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Share+Tech+Mono&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a0010;
+    --pink: #ff6eb4;
+    --hot: #ff1f8e;
+    --dim: #6b1a3e;
+    --mid: #9b2060;
+    --light: #ffc2e2;
+    --cream: #fff0f8;
+    --wood1: #c8854a;
+    --wood2: #a06030;
+    --wood3: #7a4420;
+    --wood-light: #e8b070;
+    --fret: #b8966a;
+    --string1: #ffe0a0;
+    --string2: #ffd080;
+    --glow: rgba(255,110,180,0.4);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--pink);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ctext y='28' font-size='26'%3E🎵%3C/text%3E%3C/svg%3E"), auto;
+  }
+
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px,
+      rgba(255,110,180,0.015) 2px, rgba(255,110,180,0.015) 4px);
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:1000;
+    background: rgba(13,0,8,0.97); backdrop-filter:blur(12px);
+    border-bottom: 1px solid var(--dim);
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 0 2rem; height:56px;
+    box-shadow: 0 2px 20px rgba(255,30,140,0.15);
+  }
+  .nav-logo { font-family:'Share Tech Mono',monospace; color:var(--pink); font-size:1.05rem; text-shadow:0 0 10px var(--glow); letter-spacing:2px; }
+  .nav-logo span { color:var(--hot); }
+  .nav-links { display:flex; gap:0.3rem; list-style:none; }
+  .nav-links a {
+    font-family:'Share Tech Mono',monospace; font-size:0.75rem; color:var(--dim);
+    text-decoration:none; padding:0.4rem 0.75rem; border:1px solid transparent;
+    border-radius:4px; transition:all 0.2s; letter-spacing:1px;
+  }
+  .nav-links a:hover, .nav-links a.active {
+    color:var(--pink); border-color:var(--dim);
+    text-shadow:0 0 8px var(--glow); background:rgba(255,110,180,0.06);
+  }
+  @media(max-width:650px){ .nav-links a { font-size:0.65rem; padding:0.3rem 0.5rem; } }
+
+  /* LAYOUT */
+  .wrap {
+    max-width: 1000px; margin: 0 auto;
+    padding: 72px 1rem 2rem;
+    display: flex; flex-direction:column; align-items:center; gap: 1.5rem;
+    position: relative; z-index: 1;
+  }
+
+  .page-title {
+    font-family:'Pacifico',cursive;
+    font-size:clamp(1.8rem,5vw,3rem);
+    color:var(--hot);
+    text-shadow: 0 0 20px var(--glow), 2px 3px 0 rgba(255,30,140,0.25);
+    text-align:center;
+  }
+  .page-sub {
+    font-family:'Share Tech Mono',monospace; color:var(--dim);
+    font-size:0.85rem; letter-spacing:2px; text-align:center;
+  }
+
+  /* NOTE DISPLAY */
+  .note-display {
+    font-family:'Share Tech Mono',monospace;
+    font-size:clamp(1.4rem,4vw,2.2rem);
+    color:var(--hot);
+    text-shadow: 0 0 20px var(--glow);
+    min-height: 2.5rem;
+    text-align:center;
+    transition: all 0.15s;
+    letter-spacing: 4px;
+  }
+
+  /* UKULELE SVG CONTAINER */
+  .uke-stage {
+    position: relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width: 100%;
+  }
+
+  /* FRETBOARD */
+  .fretboard-wrap {
+    position:relative;
+    width: min(760px, 97vw);
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  /* String labels */
+  .string-labels {
+    display:flex;
+    justify-content:space-around;
+    padding: 0 40px 0 80px;
+    margin-bottom:4px;
+  }
+  .str-label {
+    font-family:'Share Tech Mono',monospace;
+    font-size:0.78rem;
+    color:var(--mid);
+    text-align:center;
+    width:60px;
+    flex-shrink:0;
+  }
+  .str-label span { color:var(--pink); font-size:1rem; }
+
+  /* fret number row */
+  .fret-nums {
+    display:flex;
+    padding: 0 80px 0 80px;
+    margin-bottom:2px;
+  }
+  .fret-num {
+    font-family:'Share Tech Mono',monospace;
+    font-size:0.65rem;
+    color:var(--dim);
+    text-align:center;
+    flex:1;
+  }
+
+  /* THE FRETBOARD ITSELF */
+  .fretboard {
+    background: linear-gradient(180deg, var(--wood3) 0%, var(--wood2) 40%, var(--wood3) 100%);
+    border-radius: 6px;
+    border: 2px solid var(--wood3);
+    position:relative;
+    padding: 14px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,200,100,0.1);
+    overflow:hidden;
+  }
+
+  /* wood grain texture */
+  .fretboard::before {
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background: repeating-linear-gradient(90deg,
+      transparent, transparent 18px,
+      rgba(0,0,0,0.08) 18px, rgba(0,0,0,0.08) 19px);
+  }
+
+  /* NUT (left side) */
+  .nut {
+    position:absolute; left:78px; top:0; bottom:0;
+    width:6px;
+    background: linear-gradient(180deg, #fff8e0, #e0c880, #fff8e0);
+    z-index:5;
+    box-shadow: 1px 0 4px rgba(0,0,0,0.4);
+  }
+
+  /* STRINGS row */
+  .strings-row {
+    display:flex;
+    justify-content:space-around;
+    padding: 0 40px 0 84px;
+    position:relative;
+    z-index:3;
+    gap: 0;
+  }
+
+  .string-col {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    flex:1;
+    max-width: 60px;
+    gap: 0;
+    position:relative;
+  }
+
+  /* The string line itself */
+  .string-line {
+    position:absolute;
+    top:0; bottom:0;
+    width:2px;
+    border-radius:1px;
+    z-index:2;
+    pointer-events:none;
+    transition: all 0.1s;
+  }
+  .string-line.s0 { background:linear-gradient(180deg,#fff8c0,#ffd040,#fff8c0); width:3px; box-shadow:0 0 4px rgba(255,200,0,0.5); }
+  .string-line.s1 { background:linear-gradient(180deg,#ffe8a0,#ffc030,#ffe8a0); width:2.5px; }
+  .string-line.s2 { background:linear-gradient(180deg,#ffd890,#ffa820,#ffd890); width:2px; }
+  .string-line.s3 { background:linear-gradient(180deg,#ffd080,#ff9010,#ffd080); width:1.5px; }
+
+  /* vibrate animation */
+  .string-line.vibrate { animation: vib 0.4s ease-out; }
+  @keyframes vib {
+    0%,100% { transform:translateX(0); }
+    10% { transform:translateX(-4px); }
+    20% { transform:translateX(4px); }
+    30% { transform:translateX(-3px); }
+    40% { transform:translateX(3px); }
+    50% { transform:translateX(-2px); }
+    60% { transform:translateX(2px); }
+    70% { transform:translateX(-1px); }
+    80% { transform:translateX(1px); }
+  }
+
+  /* FRET BUTTONS */
+  .fret-btn {
+    width: 48px; height:36px;
+    background: transparent;
+    border: none;
+    cursor:pointer;
+    position:relative;
+    z-index: 4;
+    flex-shrink:0;
+    border-radius:4px;
+    transition:background 0.1s;
+  }
+  .fret-btn::after {
+    content:'';
+    position:absolute;
+    right:0; top:4px; bottom:4px; width:2px;
+    background:linear-gradient(180deg, var(--fret), rgba(184,150,106,0.3), var(--fret));
+    border-radius:1px;
+    box-shadow: 0 0 3px rgba(184,150,106,0.4);
+  }
+  .fret-btn:first-child { width:80px; }
+  .fret-btn:first-child::after { display:none; }
+
+  .fret-btn:hover { background:rgba(255,110,180,0.12); }
+  .fret-btn.pressed { background:rgba(255,30,140,0.25); animation:fretPress 0.15s ease-out; }
+  @keyframes fretPress { 0%{background:rgba(255,30,140,0.45)} 100%{background:rgba(255,30,140,0.25)} }
+
+  /* FRET DOTS (position markers) */
+  .dot-marker {
+    position:absolute; bottom:-18px;
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(255,110,180,0.4);
+    box-shadow:0 0 6px var(--glow);
+    left:50%; transform:translateX(-50%);
+  }
+
+  /* UKULELE BODY */
+  .uke-body {
+    margin-top: -10px;
+    position:relative;
+    width:220px;
+    flex-shrink:0;
+  }
+
+  .uke-body svg {
+    width:100%; filter: drop-shadow(0 8px 30px rgba(0,0,0,0.7));
+  }
+
+  /* CHORD PANEL */
+  .chord-panel {
+    display:flex; flex-wrap:wrap; gap:0.6rem;
+    justify-content:center;
+    width: min(760px,97vw);
+    padding: 1rem 0.5rem 0.5rem;
+  }
+
+  .chord-panel-title {
+    width:100%;
+    font-family:'Share Tech Mono',monospace;
+    color:var(--dim); font-size:0.78rem; letter-spacing:2px;
+    text-align:center; margin-bottom:0.3rem;
+  }
+
+  .chord-btn {
+    background: rgba(255,110,180,0.06);
+    border: 1px solid var(--dim);
+    color:var(--pink);
+    padding: 0.5rem 1.2rem;
+    border-radius:6px;
+    font-family:'Share Tech Mono',monospace;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition:all 0.2s;
+    letter-spacing:1px;
+    min-width:70px;
+    text-align:center;
+  }
+  .chord-btn:hover { border-color:var(--pink); background:rgba(255,110,180,0.15); text-shadow:0 0 8px var(--glow); }
+  .chord-btn:active { transform:scale(0.95); }
+  .chord-btn .chord-name { font-size:1.05rem; color:var(--hot); }
+  .chord-btn .chord-fingers { font-size:0.68rem; color:var(--dim); display:block; margin-top:1px; }
+
+  /* OPEN STRING BUTTONS */
+  .open-btns {
+    display:flex;
+    gap:0; padding:0 40px 0 84px;
+    justify-content:space-around;
+    margin-bottom:6px;
+  }
+  .open-btn {
+    width:48px;
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    font-family:'Share Tech Mono',monospace;
+    color:var(--mid);
+    font-size:0.72rem;
+    text-align:center;
+    padding:3px 0;
+    border-radius:4px;
+    transition:all 0.15s;
+    display:flex; flex-direction:column; align-items:center; gap:1px;
+    flex:1; max-width:60px;
+  }
+  .open-btn:hover { color:var(--pink); text-shadow:0 0 8px var(--glow); }
+  .open-btn .open-icon { font-size:1rem; }
+
+  /* ripple on play */
+  .ripple {
+    position:fixed; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,110,180,0.4), transparent);
+    pointer-events:none; z-index:9999;
+    animation: rippleOut 0.5s ease-out forwards;
+  }
+  @keyframes rippleOut {
+    0%   { width:10px; height:10px; opacity:0.8; transform:translate(-50%,-50%); }
+    100% { width:120px; height:120px; opacity:0; transform:translate(-50%,-50%); }
+  }
+
+  /* NOTE RIPPLE LABEL */
+  .note-pop {
+    position:fixed; pointer-events:none; z-index:9998;
+    font-family:'Share Tech Mono',monospace;
+    font-size:1.1rem; color:var(--hot);
+    text-shadow:0 0 10px var(--glow);
+    animation:notePop 0.8s ease-out forwards;
+  }
+  @keyframes notePop {
+    0%   { opacity:1; transform:translate(-50%,-100%) scale(1); }
+    100% { opacity:0; transform:translate(-50%,-220%) scale(0.6); }
+  }
+
+  /* VOLUME */
+  .vol-row {
+    display:flex; align-items:center; gap:0.7rem;
+    font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:var(--dim);
+  }
+  input[type=range] {
+    -webkit-appearance:none; height:4px; border-radius:2px;
+    background:var(--dim); outline:none; cursor:pointer; width:120px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+    background:var(--pink); box-shadow:0 0 6px var(--glow);
+  }
+
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--dim);border-radius:6px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">&gt; <span>ikbal</span>.exe</div>
+  <ul class="nav-links">
+    <li><a href="index.html">~/sevgi</a></li>
+    <li><a href="cmd.html">~/terminal</a></li>
+    <li><a href="cipher.html">~/sifrele</a></li>
+    <li><a href="zaman.html">~/zaman</a></li>
+    <li><a href="ukulele.html" class="active">~/ukulele</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+  <h1 class="page-title">🎵 Ukulele</h1>
+  <p class="page-sub">// her nota bir sevgi mesajı</p>
+
+  <div id="note-display" class="note-display">— — — —</div>
+
+  <div class="uke-stage">
+
+    <!-- String labels -->
+    <div class="string-labels">
+      <div class="str-label">G<span>4</span><br><span style="font-size:0.65rem;color:var(--dim)">sol</span></div>
+      <div class="str-label">C<span>4</span><br><span style="font-size:0.65rem;color:var(--dim)">do</span></div>
+      <div class="str-label">E<span>4</span><br><span style="font-size:0.65rem;color:var(--dim)">mi</span></div>
+      <div class="str-label">A<span>4</span><br><span style="font-size:0.65rem;color:var(--dim)">la</span></div>
+    </div>
+
+    <!-- Open string buttons -->
+    <div class="open-btns" id="open-btns"></div>
+
+    <!-- FRETBOARD -->
+    <div class="fretboard-wrap">
+      <div class="fret-nums" id="fret-nums"></div>
+      <div class="fretboard">
+        <div class="nut"></div>
+        <div class="strings-row" id="strings-row"></div>
+      </div>
+    </div>
+
+    <!-- Ukulele body SVG -->
+    <div class="uke-body">
+      <svg viewBox="0 0 220 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="bodyGrad" cx="50%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#d4904e"/>
+            <stop offset="60%" stop-color="#a06030"/>
+            <stop offset="100%" stop-color="#5a2e0a"/>
+          </radialGradient>
+          <radialGradient id="soundholeGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#0a0005"/>
+            <stop offset="100%" stop-color="#1a0810"/>
+          </radialGradient>
+          <filter id="woodShadow">
+            <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.6"/>
+          </filter>
+        </defs>
+
+        <!-- Body outline -->
+        <path d="M110,10 C145,10 175,30 185,65 C195,100 185,130 175,150
+                 C165,170 160,180 162,200 C165,225 170,245 155,262
+                 C140,278 120,282 110,282
+                 C100,282 80,278 65,262
+                 C50,245 55,225 58,200
+                 C60,180 55,170 45,150
+                 C35,130 25,100 35,65
+                 C45,30 75,10 110,10 Z"
+              fill="url(#bodyGrad)" filter="url(#woodShadow)"/>
+
+        <!-- Wood grain lines -->
+        <path d="M90,15 Q95,80 92,150 Q90,200 88,270" stroke="rgba(0,0,0,0.1)" stroke-width="1.5" fill="none"/>
+        <path d="M110,12 Q112,90 110,160 Q109,210 108,278" stroke="rgba(0,0,0,0.08)" stroke-width="1" fill="none"/>
+        <path d="M128,15 Q126,80 128,150 Q130,200 132,270" stroke="rgba(0,0,0,0.1)" stroke-width="1.5" fill="none"/>
+
+        <!-- Body edge highlight -->
+        <path d="M110,10 C145,10 175,30 185,65 C195,100 185,130 175,150
+                 C165,170 160,180 162,200 C165,225 170,245 155,262
+                 C140,278 120,282 110,282"
+              fill="none" stroke="rgba(255,200,100,0.25)" stroke-width="2"/>
+
+        <!-- Waist decoration -->
+        <path d="M42,148 Q55,165 68,170 Q85,175 92,178" stroke="rgba(255,200,100,0.15)" stroke-width="1.5" fill="none"/>
+        <path d="M178,148 Q165,165 152,170 Q135,175 128,178" stroke="rgba(255,200,100,0.15)" stroke-width="1.5" fill="none"/>
+
+        <!-- Soundhole -->
+        <circle cx="110" cy="160" r="35" fill="url(#soundholeGrad)"/>
+        <circle cx="110" cy="160" r="35" fill="none" stroke="rgba(255,160,60,0.5)" stroke-width="2"/>
+        <circle cx="110" cy="160" r="30" fill="none" stroke="rgba(255,160,60,0.2)" stroke-width="1"/>
+
+        <!-- Rosette (decorative ring around soundhole) -->
+        <circle cx="110" cy="160" r="37" fill="none" stroke="rgba(255,180,80,0.35)" stroke-width="3" stroke-dasharray="4 3"/>
+
+        <!-- Pink heart inside soundhole ❤ -->
+        <text x="110" y="167" text-anchor="middle" font-size="22" fill="rgba(255,30,140,0.6)">❤</text>
+
+        <!-- Bridge -->
+        <rect x="85" y="220" width="50" height="9" rx="3" fill="#7a4420"/>
+        <rect x="85" y="220" width="50" height="3" rx="1.5" fill="rgba(255,200,100,0.4)"/>
+
+        <!-- Bridge saddle -->
+        <rect x="87" y="221" width="46" height="2" rx="1" fill="#fff8e0"/>
+
+        <!-- String pins -->
+        <circle cx="96" cy="225" r="2" fill="#3a1a00"/>
+        <circle cx="104" cy="225" r="2" fill="#3a1a00"/>
+        <circle cx="116" cy="225" r="2" fill="#3a1a00"/>
+        <circle cx="124" cy="225" r="2" fill="#3a1a00"/>
+
+        <!-- Strings on body -->
+        <line x1="96" y1="223" x2="96" y2="12" stroke="rgba(255,220,100,0.5)" stroke-width="1.5"/>
+        <line x1="104" y1="223" x2="104" y2="12" stroke="rgba(255,210,80,0.45)" stroke-width="1.3"/>
+        <line x1="116" y1="223" x2="116" y2="12" stroke="rgba(255,200,60,0.4)" stroke-width="1"/>
+        <line x1="124" y1="223" x2="124" y2="12" stroke="rgba(255,190,50,0.38)" stroke-width="0.8"/>
+
+        <!-- Neck join -->
+        <rect x="95" y="8" width="30" height="14" rx="3" fill="#6a3818"/>
+
+        <!-- Strap button -->
+        <circle cx="110" cy="282" r="5" fill="#5a2e0a"/>
+        <circle cx="110" cy="282" r="3" fill="#7a4820"/>
+      </svg>
+    </div>
+
+  </div>
+
+  <!-- Chord panel -->
+  <div class="chord-panel" id="chord-panel">
+    <div class="chord-panel-title">// popüler akorlar — tıkla çal</div>
+  </div>
+
+  <!-- Volume + info -->
+  <div class="vol-row">
+    <span>🔊</span>
+    <input type="range" id="vol" min="0" max="100" value="70" oninput="setVol(this.value)">
+    <span id="vol-val">70%</span>
+    <span style="margin-left:1rem; color:var(--dim)">// tel bas veya akora tıkla</span>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  AUDIO ENGINE — Karplus-Strong plucked string synthesis
+// ══════════════════════════════════════════
+let audioCtx = null;
+let masterGain = null;
+let volLevel = 0.70;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = volLevel;
+
+  // Reverb (convolver with simple impulse)
+  const convolver = audioCtx.createConvolver();
+  const rate = audioCtx.sampleRate;
+  const length = rate * 1.5;
+  const impulse = audioCtx.createBuffer(2, length, rate);
+  for (let c = 0; c < 2; c++) {
+    const d = impulse.getChannelData(c);
+    for (let i = 0; i < length; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/length, 3.5);
+  }
+  convolver.buffer = impulse;
+
+  const reverbGain = audioCtx.createGain();
+  reverbGain.gain.value = 0.18;
+
+  masterGain.connect(audioCtx.destination);
+  masterGain.connect(convolver);
+  convolver.connect(reverbGain);
+  reverbGain.connect(audioCtx.destination);
+}
+
+function setVol(v) {
+  volLevel = v / 100;
+  if (masterGain) masterGain.gain.value = volLevel;
+  document.getElementById('vol-val').textContent = v + '%';
+}
+
+// Karplus-Strong string synthesis
+function pluckNote(freq, duration = 2.0) {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const now = audioCtx.currentTime;
+  const sampleRate = audioCtx.sampleRate;
+  const bufferSize = Math.round(sampleRate / freq);
+
+  // Create noise buffer (initial pluck)
+  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, sampleRate);
+  const noiseData = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    noiseData[i] = Math.random() * 2 - 1;
+  }
+
+  const source = audioCtx.createBufferSource();
+  source.buffer = noiseBuffer;
+  source.loop = true;
+
+  // Lowpass filter for the "string" smoothing
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = freq * 3.5;
+  filter.Q.value = 0.5;
+
+  // Tone shaping
+  const toneFilter = audioCtx.createBiquadFilter();
+  toneFilter.type = 'peaking';
+  toneFilter.frequency.value = 2200;
+  toneFilter.gain.value = 3;
+  toneFilter.Q.value = 1;
+
+  // Gain envelope
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.9, now);
+  gain.gain.setTargetAtTime(0, now + 0.15, duration * 0.28);
+
+  // Pitch via playback rate trick + delay feedback loop
+  // (simplified KS — use OscillatorNode + IIR for proper KS)
+  source.playbackRate.value = freq / 440;
+
+  // IIR lowpass delay for KS proper
+  // Simpler: use two oscillators with detuning
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  osc1.type = 'sawtooth';
+  osc2.type = 'triangle';
+  osc1.frequency.value = freq;
+  osc2.frequency.value = freq * 1.001; // slight detune for richness
+
+  const oscGain1 = audioCtx.createGain();
+  const oscGain2 = audioCtx.createGain();
+  oscGain1.gain.value = 0.35;
+  oscGain2.gain.value = 0.25;
+
+  // Envelope - ukulele has fast attack, moderate decay
+  const env = audioCtx.createGain();
+  env.gain.setValueAtTime(0, now);
+  env.gain.linearRampToValueAtTime(1.0, now + 0.005);
+  env.gain.exponentialRampToValueAtTime(0.4, now + 0.1);
+  env.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+  // Noise burst for attack (pluck sound)
+  const attackNoise = audioCtx.createBufferSource();
+  const aBuf = audioCtx.createBuffer(1, sampleRate * 0.02, sampleRate);
+  const aNoise = aBuf.getChannelData(0);
+  for (let i = 0; i < aNoise.length; i++) aNoise[i] = (Math.random()*2-1) * (1 - i/aNoise.length);
+  attackNoise.buffer = aBuf;
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0.3;
+  const noiseFilter2 = audioCtx.createBiquadFilter();
+  noiseFilter2.type = 'bandpass';
+  noiseFilter2.frequency.value = freq * 2;
+  noiseFilter2.Q.value = 2;
+
+  // Connect all
+  osc1.connect(oscGain1); osc2.connect(oscGain2);
+  oscGain1.connect(filter); oscGain2.connect(filter);
+  attackNoise.connect(noiseFilter2); noiseFilter2.connect(noiseGain);
+  noiseGain.connect(filter);
+  filter.connect(toneFilter);
+  toneFilter.connect(env);
+  env.connect(masterGain);
+
+  osc1.start(now); osc1.stop(now + duration);
+  osc2.start(now); osc2.stop(now + duration);
+  attackNoise.start(now); attackNoise.stop(now + 0.02);
+}
+
+// ══════════════════════════════════════════
+//  NOTE DEFINITIONS
+// ══════════════════════════════════════════
+// Ukulele GCEA tuning (standard)
+// String index 0=G, 1=C, 2=E, 3=A
+// fret 0 = open string
+const BASE_FREQS = {
+  G4: 392.00, C4: 261.63, E4: 329.63, A4: 440.00
+};
+const STRING_OPEN = ['G4','C4','E4','A4'];
+const STRING_OPEN_FREQ = [392.00, 261.63, 329.63, 440.00];
+
+// Note names for display
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTE_TR = {
+  'C':'Do','C#':'Do#','D':'Re','D#':'Re#','E':'Mi','F':'Fa',
+  'F#':'Fa#','G':'Sol','G#':'Sol#','A':'La','A#':'La#','B':'Si'
+};
+
+function semitoneFreq(baseFreq, semitones) {
+  return baseFreq * Math.pow(2, semitones / 12);
+}
+
+function freqToNoteName(freq) {
+  const A4 = 440;
+  const semitones = Math.round(12 * Math.log2(freq / A4));
+  const noteIdx = ((semitones % 12) + 12 + 9) % 12; // A is index 9
+  const note = NOTE_NAMES[noteIdx];
+  const octave = Math.floor((semitones + 9) / 12) + 4;
+  return note + octave;
+}
+
+function noteTR(noteStr) {
+  const note = noteStr.replace(/[0-9]/g,'');
+  const oct = noteStr.replace(/[^0-9]/g,'');
+  return (NOTE_TR[note] || note) + oct;
+}
+
+// ══════════════════════════════════════════
+//  BUILD FRETBOARD
+// ══════════════════════════════════════════
+const FRET_COUNT = 12;
+const DOT_FRETS = [3, 5, 7, 10, 12];
+
+// Fret numbers row
+const fretNums = document.getElementById('fret-nums');
+for (let f = 0; f <= FRET_COUNT; f++) {
+  const d = document.createElement('div');
+  d.className = 'fret-num';
+  d.textContent = f === 0 ? '' : f;
+  fretNums.appendChild(d);
+}
+
+// Open string buttons
+const openBtns = document.getElementById('open-btns');
+STRING_OPEN.forEach((note, si) => {
+  const btn = document.createElement('button');
+  btn.className = 'open-btn';
+  btn.innerHTML = `<span class="open-icon">○</span><span>${noteTR(note)}</span>`;
+  btn.title = `Açık tel: ${note}`;
+  btn.onclick = (e) => {
+    playFret(si, 0, e.clientX, e.clientY);
+  };
+  openBtns.appendChild(btn);
+});
+
+// Main fretboard
+const stringsRow = document.getElementById('strings-row');
+// We'll build 4 columns (one per string)
+// Each column has FRET_COUNT+1 fret-btns stacked vertically
+// and a string line running through
+
+for (let si = 0; si < 4; si++) {
+  const col = document.createElement('div');
+  col.className = 'string-col';
+  col.id = `scol-${si}`;
+
+  // String line
+  const line = document.createElement('div');
+  line.className = `string-line s${si}`;
+  line.id = `sline-${si}`;
+  col.appendChild(line);
+
+  // Fret buttons for this string
+  for (let f = 0; f <= FRET_COUNT; f++) {
+    const freq = semitoneFreq(STRING_OPEN_FREQ[si], f);
+    const noteName = freqToNoteName(freq);
+    const btn = document.createElement('button');
+    btn.className = 'fret-btn';
+    btn.title = `${noteTR(noteName)} (${noteName}) — Fret ${f}`;
+    btn.dataset.string = si;
+    btn.dataset.fret = f;
+
+    // dot markers
+    if (f > 0 && DOT_FRETS.includes(f) && si === 1) {
+      const dot = document.createElement('div');
+      dot.className = 'dot-marker';
+      btn.appendChild(dot);
+    }
+
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      playFret(si, f, e.clientX, e.clientY);
+    };
+    col.appendChild(btn);
+  }
+
+  stringsRow.appendChild(col);
+}
+
+// ══════════════════════════════════════════
+//  PLAY A FRET
+// ══════════════════════════════════════════
+let lastNotes = ['—','—','—','—'];
+
+function playFret(stringIdx, fret, x, y) {
+  const freq = semitoneFreq(STRING_OPEN_FREQ[stringIdx], fret);
+  const noteName = freqToNoteName(freq);
+  pluckNote(freq, 1.8);
+
+  // update display
+  lastNotes[stringIdx] = noteTR(noteName);
+  document.getElementById('note-display').textContent = lastNotes.join('  ');
+
+  // vibrate string
+  const line = document.getElementById(`sline-${stringIdx}`);
+  line.classList.remove('vibrate');
+  void line.offsetWidth;
+  line.classList.add('vibrate');
+  line.style.background = `linear-gradient(180deg,#ff6eb4,#ff1f8e,#ff6eb4)`;
+  line.style.boxShadow = `0 0 12px rgba(255,30,140,0.8)`;
+  setTimeout(() => {
+    line.style.background = '';
+    line.style.boxShadow = '';
+  }, 400);
+
+  // press animation
+  const btn = document.querySelector(`[data-string="${stringIdx}"][data-fret="${fret}"]`);
+  if (btn) { btn.classList.add('pressed'); setTimeout(()=>btn.classList.remove('pressed'),200); }
+
+  // ripple
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  r.style.left = x + 'px'; r.style.top = y + 'px';
+  document.body.appendChild(r);
+  r.addEventListener('animationend', ()=>r.remove());
+
+  // note pop
+  const np = document.createElement('div');
+  np.className = 'note-pop';
+  np.textContent = noteTR(noteName);
+  np.style.left = x + 'px'; np.style.top = y + 'px';
+  document.body.appendChild(np);
+  np.addEventListener('animationend', ()=>np.remove());
+}
+
+// ══════════════════════════════════════════
+//  CHORDS
+// ══════════════════════════════════════════
+// Format: [G-fret, C-fret, E-fret, A-fret], delay ms between strings
+const CHORDS = [
+  { name:'C',     emoji:'🌸', fingers:[0,0,0,3], desc:'0-0-0-3' },
+  { name:'Am',    emoji:'💗', fingers:[2,0,0,0], desc:'2-0-0-0' },
+  { name:'F',     emoji:'💕', fingers:[2,0,1,0], desc:'2-0-1-0' },
+  { name:'G',     emoji:'✨', fingers:[0,2,3,2], desc:'0-2-3-2' },
+  { name:'Em',    emoji:'🎀', fingers:[0,4,3,2], desc:'0-4-3-2' },
+  { name:'Dm',    emoji:'💖', fingers:[2,2,1,0], desc:'2-2-1-0' },
+  { name:'E',     emoji:'🌟', fingers:[1,4,0,2], desc:'1-4-0-2' },
+  { name:'D',     emoji:'💘', fingers:[2,2,2,0], desc:'2-2-2-0' },
+  { name:'A',     emoji:'🌺', fingers:[1,0,0,0], desc:'1-0-0-0' },
+  { name:'G7',    emoji:'🎶', fingers:[0,2,1,2], desc:'0-2-1-2' },
+  { name:'C7',    emoji:'💝', fingers:[0,0,0,1], desc:'0-0-0-1' },
+  { name:'Fm',    emoji:'🌷', fingers:[1,0,1,3], desc:'1-0-1-3' },
+];
+
+const chordPanel = document.getElementById('chord-panel');
+// Keep the title
+const titleEl = chordPanel.querySelector('.chord-panel-title');
+chordPanel.innerHTML = '';
+chordPanel.appendChild(titleEl);
+
+CHORDS.forEach(chord => {
+  const btn = document.createElement('button');
+  btn.className = 'chord-btn';
+  btn.innerHTML = `<span class="chord-name">${chord.emoji} ${chord.name}</span><span class="chord-fingers">${chord.desc}</span>`;
+  btn.title = `${chord.name} akordu — fretler: ${chord.desc}`;
+  btn.onclick = (e) => playChord(chord, e.clientX, e.clientY);
+  chordPanel.appendChild(btn);
+});
+
+function playChord(chord, x, y) {
+  // Strum — slight delay between strings for realistic feel
+  const DELAYS = [0, 50, 100, 150];
+  chord.fingers.forEach((fret, si) => {
+    setTimeout(() => {
+      playFret(si, fret, x + (si-1.5)*30, y);
+    }, DELAYS[si]);
+  });
+}
+
+// ══════════════════════════════════════════
+//  KEYBOARD SUPPORT
+// ══════════════════════════════════════════
+// a=G, s=C, d=E, f=A open strings
+// also: 1,2,3,4 = strings with cursor for fret
+const keyMap = { 'a':0, 's':1, 'd':2, 'f':3 };
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (keyMap[e.key] !== undefined && !e.repeat) {
+    const si = keyMap[e.key];
+    playFret(si, 0, window.innerWidth/2, window.innerHeight/2);
+  }
+});
+</script>
+</body>
+</html>

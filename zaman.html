@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/zaman — ikbal.exe</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Share+Tech+Mono&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#fff0f8; --pink:#ff6eb4; --hot:#ff1f8e; --light:#ffc2e2;
+    --dim:#8b2252; --purple:#d77dff; --dark-bg:#0d0008;
+    --glow:rgba(255,110,180,0.35);
+    --slow-factor:1;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html { scroll-behavior:smooth; }
+  body{background:var(--bg);color:#4a0030;font-family:'Nunito',sans-serif;
+    min-height:100vh;overflow-x:hidden;transition:background 1.5s ease;}
+  body.slowing{background:#ffe0f5;}
+  body.slow{background:#ffb3dc;}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:1000;
+    background:rgba(13,0,8,0.96);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--dim);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 2rem;height:56px;box-shadow:0 2px 20px rgba(255,30,140,0.2);}
+  .nav-logo{font-family:'Share Tech Mono',monospace;color:var(--pink);
+    font-size:1.05rem;text-shadow:0 0 10px var(--glow);letter-spacing:2px;}
+  .nav-logo span{color:var(--hot);}
+  .nav-links{display:flex;gap:0.3rem;list-style:none;}
+  .nav-links a{font-family:'Share Tech Mono',monospace;font-size:0.78rem;
+    color:var(--dim);text-decoration:none;padding:0.4rem 0.85rem;
+    border:1px solid transparent;border-radius:4px;transition:all 0.2s;letter-spacing:1px;}
+  .nav-links a:hover,.nav-links a.active{color:var(--pink);border-color:var(--dim);
+    text-shadow:0 0 8px var(--glow);background:rgba(255,110,180,0.07);}
+  @media(max-width:600px){.nav-links a{font-size:0.68rem;padding:0.35rem 0.5rem;}}
+
+  /* ── MAIN ── */
+  .page{min-height:100vh;padding-top:56px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;position:relative;overflow:hidden;gap:2.5rem;}
+
+  /* background petals */
+  .petal{position:absolute;pointer-events:none;opacity:0.18;
+    animation:petalFall linear infinite;}
+  @keyframes petalFall{
+    0%{transform:translateY(-60px) rotate(0deg) translateX(0);opacity:0;}
+    10%{opacity:0.18;}
+    90%{opacity:0.18;}
+    100%{transform:translateY(110vh) rotate(360deg) translateX(40px);opacity:0;}
+  }
+
+  /* CLOCK */
+  .clock-display{position:relative;z-index:2;text-align:center;}
+  #time-str{font-family:'Share Tech Mono',monospace;font-size:clamp(3rem,10vw,7rem);
+    color:var(--hot);text-shadow:0 0 30px var(--glow),2px 3px 0 rgba(255,30,140,0.2);
+    letter-spacing:4px;transition:all 1.5s ease;line-height:1;}
+  #date-str{font-family:'Share Tech Mono',monospace;font-size:clamp(0.9rem,2.5vw,1.3rem);
+    color:var(--dim);letter-spacing:3px;margin-top:0.6rem;transition:all 1.5s ease;}
+  body.slow #time-str{color:#ff69b4;text-shadow:0 0 60px rgba(255,110,180,0.8),0 0 120px rgba(255,110,180,0.4);}
+
+  /* HOURGLASS BUTTON */
+  .hourglass-wrap{position:relative;z-index:2;display:flex;flex-direction:column;
+    align-items:center;gap:0.8rem;}
+  #hg-btn{background:none;border:none;cursor:pointer;font-size:5rem;
+    filter:drop-shadow(0 4px 15px rgba(255,30,140,0.3));
+    transition:all 0.3s ease;user-select:none;-webkit-user-select:none;
+    animation:hgFloat 3s ease-in-out infinite;}
+  @keyframes hgFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(5deg)}}
+  #hg-btn:hover{filter:drop-shadow(0 6px 25px rgba(255,30,140,0.6));transform:scale(1.1);}
+  body.slow #hg-btn{animation:hgSlow 8s ease-in-out infinite;}
+  @keyframes hgSlow{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-5px) rotate(2deg)}}
+  .hg-label{font-family:'Share Tech Mono',monospace;color:var(--dim);font-size:0.85rem;
+    letter-spacing:2px;text-align:center;transition:color 0.5s;}
+  body.slow .hg-label{color:var(--hot);}
+
+  /* STATUS MSG */
+  #status-msg{font-family:'Pacifico',cursive;font-size:clamp(1.2rem,3vw,2rem);
+    color:var(--hot);text-align:center;min-height:3rem;transition:all 0.8s ease;
+    text-shadow:0 0 20px var(--glow);z-index:2;position:relative;
+    padding:0 1rem;}
+
+  /* PINK OVERLAY */
+  #pink-overlay{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 50% 50%, rgba(255,110,180,0) 0%, transparent 70%);
+    transition:background 2s ease;}
+  body.slow #pink-overlay{
+    background:radial-gradient(ellipse at 50% 50%, rgba(255,182,220,0.35) 0%, rgba(255,20,120,0.08) 100%);}
+
+  /* PULSE RINGS */
+  .pulse-ring{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    border-radius:50%;border:2px solid rgba(255,110,180,0.3);
+    pointer-events:none;z-index:0;opacity:0;}
+  body.slow .pulse-ring{animation:pulseExpand 3s ease-out infinite;}
+  @keyframes pulseExpand{
+    0%{width:100px;height:100px;opacity:0.6;transform:translate(-50%,-50%);}
+    100%{width:600px;height:600px;opacity:0;transform:translate(-50%,-50%);}}
+  .pulse-ring:nth-child(2){animation-delay:1s !important;}
+  .pulse-ring:nth-child(3){animation-delay:2s !important;}
+
+  /* SLOW PARTICLES */
+  .slow-particle{position:fixed;pointer-events:none;z-index:3;
+    animation:slowFloat linear infinite;}
+  @keyframes slowFloat{
+    0%{transform:translateY(110vh) rotate(0);opacity:0;}
+    5%{opacity:0.8;}
+    95%{opacity:0.8;}
+    100%{transform:translateY(-20px) rotate(720deg);opacity:0;}}
+
+  /* RESET BTN */
+  #reset-btn{display:none;position:relative;z-index:2;
+    background:#fff;color:var(--hot);border:2px solid var(--hot);
+    border-radius:50px;padding:0.6rem 2rem;font-family:'Share Tech Mono',monospace;
+    font-size:0.9rem;cursor:pointer;transition:all 0.2s;letter-spacing:1px;}
+  #reset-btn:hover{background:var(--hot);color:#fff;}
+
+  /* SONG OF TIME text */
+  .poem{position:relative;z-index:2;max-width:420px;text-align:center;
+    font-family:'Pacifico',cursive;font-size:clamp(0.95rem,2vw,1.15rem);
+    color:rgba(255,30,140,0.35);line-height:2;transition:color 2s ease;}
+  body.slow .poem{color:rgba(255,30,140,0.7);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">&gt; <span>ikbal</span>.exe</div>
+  <ul class="nav-links">
+    <li><a href="index.html">~/sevgi</a></li>
+    <li><a href="cmd.html">~/terminal</a></li>
+    <li><a href="cipher.html">~/sifrele</a></li>
+    <li><a href="zaman.html" class="active">~/zaman</a></li>
+    <li><a href="ukulele.html">~/ukulele</a></li>
+  </ul>
+</nav>
+
+<!-- pulse rings -->
+<div class="pulse-ring"></div>
+<div class="pulse-ring"></div>
+<div class="pulse-ring"></div>
+<div id="pink-overlay"></div>
+
+<main class="page" id="mainPage">
+
+  <div class="clock-display">
+    <div id="time-str">00:00:00</div>
+    <div id="date-str">-- / -- / ----</div>
+  </div>
+
+  <p id="status-msg">⌛ Zamanı yavaşlatmak için kumandaya bas</p>
+
+  <div class="hourglass-wrap">
+    <button id="hg-btn" onclick="slowTime()" title="Zamanı yavaşlat">⌛</button>
+    <span class="hg-label" id="hg-label">// zaman.exe</span>
+  </div>
+
+  <p class="poem" id="poem">
+    seninle geçen her saniye<br>
+    sanki daha yavaş akar<br>
+    ve ben istiyorum ki<br>
+    hep böyle kalsın ❤️
+  </p>
+
+  <button id="reset-btn" onclick="resetTime()">▶ Zamanı Geri Al</button>
+</main>
+
+<script>
+let isSlow = false;
+let slowInterval = null;
+let clockInterval = null;
+let slowParticles = [];
+const emojis = ['🌸','💗','💕','❤️','✨','🎀','💖','🌷','🌺','💓'];
+
+// ── CLOCK ──
+function updateClock(speed=1){
+  const now = new Date();
+  // Real time display (we display real time but animate it slowly)
+  document.getElementById('time-str').textContent =
+    now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('date-str').textContent =
+    now.toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+
+clockInterval = setInterval(updateClock, 1000);
+updateClock();
+
+// ── PETALS ──
+function createPetal(){
+  const p = document.createElement('div');
+  p.className='petal';
+  p.textContent = ['🌸','🌷','🌺','🌼','🌻'][Math.floor(Math.random()*5)];
+  p.style.left = Math.random()*100+'vw';
+  p.style.fontSize = (1+Math.random()*1.5)+'rem';
+  const dur = 8+Math.random()*10;
+  p.style.animationDuration = dur+'s';
+  p.style.animationDelay = Math.random()*dur+'s';
+  document.getElementById('mainPage').appendChild(p);
+}
+for(let i=0;i<15;i++) createPetal();
+
+// ── SLOW TIME ──
+function slowTime(){
+  if(isSlow) return;
+  isSlow = true;
+
+  document.body.classList.add('slowing');
+  setTimeout(()=>document.body.classList.add('slow'), 500);
+
+  document.getElementById('hg-btn').textContent = '⏳';
+  document.getElementById('hg-btn').style.animation = 'none';
+  document.getElementById('hg-btn').style.fontSize = '6rem';
+  document.getElementById('hg-btn').style.transition = 'all 2s ease';
+  document.getElementById('hg-label').textContent = '// yavaşlıyor...';
+  document.getElementById('status-msg').textContent = '💗 Zaman yavaşlıyor... sanki seninle gibiyiz 💗';
+  document.getElementById('reset-btn').style.display = 'block';
+
+  // slow the clock down visually (CSS animation-duration scaling)
+  document.querySelectorAll('.petal').forEach(p=>{
+    const cur = parseFloat(p.style.animationDuration||'10');
+    p.style.animationDuration = (cur*3.5)+'s';
+  });
+
+  // spawn slow particles
+  spawnSlowParticles();
+
+  // pink vignette pulse  
+  let hue = 0;
+  slowInterval = setInterval(()=>{
+    hue = (hue+1)%360;
+  }, 100);
+
+  // typewriter effect for status after 2s
+  setTimeout(()=>{
+    typeStatus('💕 Zamanı durdursam... sadece seninle...');
+  },2500);
+  setTimeout(()=>{
+    typeStatus('❤️ Sen yanımdayken zaman zaten yavaş geçiyor 💗');
+  },6000);
+}
+
+function typeStatus(msg){
+  const el = document.getElementById('status-msg');
+  el.textContent='';
+  let i=0;
+  const iv = setInterval(()=>{
+    if(i>=msg.length){clearInterval(iv);return;}
+    el.textContent+=msg[i]; i++;
+  },60);
+}
+
+function spawnSlowParticles(){
+  function spawnOne(){
+    if(!isSlow)return;
+    const p=document.createElement('div');
+    p.className='slow-particle';
+    p.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left=Math.random()*100+'vw';
+    p.style.fontSize=(1.2+Math.random()*2)+'rem';
+    const dur = 6+Math.random()*8;
+    p.style.animationDuration=dur+'s';
+    document.body.appendChild(p);
+    slowParticles.push(p);
+    p.addEventListener('animationend',()=>{p.remove();slowParticles=slowParticles.filter(x=>x!==p);});
+    setTimeout(spawnOne, 300+Math.random()*800);
+  }
+  spawnOne();
+}
+
+function resetTime(){
+  isSlow = false;
+  document.body.classList.remove('slowing','slow');
+  clearInterval(slowInterval);
+  document.getElementById('hg-btn').textContent='⌛';
+  document.getElementById('hg-btn').style.fontSize='5rem';
+  document.getElementById('hg-btn').style.animation='';
+  document.getElementById('hg-label').textContent='// zaman.exe';
+  document.getElementById('status-msg').textContent='⌛ Zamanı yavaşlatmak için kumandaya bas';
+  document.getElementById('reset-btn').style.display='none';
+  // restore petal speeds
+  document.querySelectorAll('.petal').forEach(p=>{
+    const cur=parseFloat(p.style.animationDuration||'30');
+    p.style.animationDuration=(cur/3.5)+'s';
+  });
+  // remove slow particles
+  slowParticles.forEach(p=>p.remove());
+  slowParticles=[];
+}
+</script>
+</body>
+</html>

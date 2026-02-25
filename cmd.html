@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/terminal — ikbal.exe</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0008; --pink: #ff6eb4; --bright: #ff1f8e; --dim: #6b1a3e;
+    --mid: #9b2060; --white: #ffe0f5; --green: #8affc1; --yellow: #ffe07a;
+    --glow: rgba(255,110,180,0.35);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--pink); font-family:'Share Tech Mono',monospace;
+    overflow-x:hidden; min-height:100vh; }
+
+  /* NAV */
+  nav { position:fixed; top:0; left:0; right:0; z-index:1000;
+    background:rgba(13,0,8,0.97); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--dim);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 2rem; height:56px; box-shadow:0 2px 20px rgba(255,30,140,0.15); }
+  .nav-logo { color:var(--pink); font-size:1.05rem; text-shadow:0 0 10px var(--glow); letter-spacing:2px; }
+  .nav-logo span { color:var(--bright); }
+  .nav-links { display:flex; gap:0.3rem; list-style:none; }
+  .nav-links a { font-size:0.78rem; color:var(--dim); text-decoration:none;
+    padding:0.4rem 0.85rem; border:1px solid transparent; border-radius:4px;
+    transition:all 0.2s; letter-spacing:1px; }
+  .nav-links a:hover, .nav-links a.active { color:var(--pink); border-color:var(--dim);
+    text-shadow:0 0 8px var(--glow); background:rgba(255,110,180,0.06); }
+  @media(max-width:600px){ .nav-links a { font-size:0.68rem; padding:0.35rem 0.5rem; } }
+
+  /* MAIN */
+  .wrap { max-width:900px; margin:0 auto; padding:80px 1.5rem 2rem; min-height:100vh;
+    display:flex; flex-direction:column; }
+
+  /* SCANLINES */
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,
+      rgba(255,110,180,0.02) 2px,rgba(255,110,180,0.02) 4px); }
+  body::after { content:''; position:fixed; inset:0; pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.65) 100%); }
+
+  /* WINDOW */
+  .terminal-win { flex:1; border:1px solid var(--dim); border-radius:10px; overflow:hidden;
+    box-shadow:0 0 50px rgba(255,30,140,0.2),0 0 100px rgba(255,30,140,0.06);
+    position:relative; z-index:1; display:flex; flex-direction:column; }
+  .titlebar { background:#1a0010; padding:0.6rem 1rem; display:flex; align-items:center;
+    gap:0.5rem; border-bottom:1px solid var(--dim); flex-shrink:0; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r{background:#ff5f57} .dot.y{background:#febc2e} .dot.g{background:#28c840}
+  .t-title { font-size:0.8rem; color:var(--dim); margin-left:0.5rem; letter-spacing:1px; }
+
+  /* OUTPUT */
+  #output { flex:1; padding:1.2rem 1.5rem 0.5rem; overflow-y:auto;
+    font-size:clamp(0.78rem,2vw,0.92rem); line-height:1.9; max-height:calc(100vh - 200px); }
+  #output::-webkit-scrollbar { width:5px; }
+  #output::-webkit-scrollbar-track { background:transparent; }
+  #output::-webkit-scrollbar-thumb { background:var(--dim); border-radius:5px; }
+
+  .line { display:block; word-break:break-all; }
+  .p-sym { color:var(--dim); }
+  .p-cmd { color:#fff; }
+  .p-out { color:var(--pink); }
+  .p-bright { color:var(--bright); text-shadow:0 0 8px var(--glow); }
+  .p-dim { color:var(--dim); }
+  .p-white { color:var(--white); }
+  .p-green { color:var(--green); }
+  .p-yellow { color:var(--yellow); }
+  .p-err { color:#ff8888; }
+  .p-heart { color:var(--bright); text-shadow:0 0 10px rgba(255,30,140,0.7); }
+  .p-section { color:var(--mid); }
+  .indent { padding-left:2ch; }
+
+  /* INPUT ROW */
+  .input-row { display:flex; align-items:center; padding:0.8rem 1.5rem;
+    border-top:1px solid var(--dim); background:#0d0008; flex-shrink:0; }
+  .input-prompt { color:var(--dim); white-space:nowrap; margin-right:0.7rem; font-size:0.9rem; }
+  #cmd-input { flex:1; background:transparent; border:none; outline:none;
+    color:#fff; font-family:'Share Tech Mono',monospace; font-size:0.92rem;
+    caret-color:var(--pink); }
+  #cmd-input::placeholder { color:var(--dim); }
+
+  .cursor { display:inline-block; width:9px; height:1em; background:var(--pink);
+    vertical-align:text-bottom; animation:blink 1s step-end infinite;
+    box-shadow:0 0 6px var(--glow); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--dim); border-radius:6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">&gt; <span>ikbal</span>.exe</div>
+  <ul class="nav-links">
+    <li><a href="index.html">~/sevgi</a></li>
+    <li><a href="cmd.html" class="active">~/terminal</a></li>
+    <li><a href="cipher.html">~/sifrele</a></li>
+    <li><a href="zaman.html">~/zaman</a></li>
+    <li><a href="ukulele.html">~/ukulele</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+  <div class="terminal-win">
+    <div class="titlebar">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <span class="t-title">love_terminal v2.0 — ikbal@kalp:~ — interactive mode</span>
+    </div>
+    <div id="output"></div>
+    <div class="input-row">
+      <span class="input-prompt">ikbal@kalp:~$</span>
+      <input id="cmd-input" type="text" placeholder="komut yaz... (help için 'help' yaz)" autocomplete="off" spellcheck="false" autofocus>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* KALBIM mode overrides */
+  body.kalbim-mode { background: #ff1a6e !important; }
+  body.kalbim-mode .terminal-win { border-color:#ff69b4; box-shadow:0 0 80px rgba(255,30,140,0.8),0 0 160px rgba(255,30,140,0.3); }
+  body.kalbim-mode #output { background: rgba(80,0,40,0.55); }
+  body.kalbim-mode .titlebar { background:#5a0030; }
+  body.kalbim-mode .input-row { background:#4a0028; border-color:#ff69b4; }
+  /* MATRIX locked */
+  body.matrix-mode { background: #0d0008; }
+  body.matrix-mode .terminal-win { border-color:#ff1f8e; box-shadow:0 0 120px rgba(255,30,140,0.9); }
+  body.matrix-mode #output { background: rgba(60,0,30,0.7); }
+  /* kalp rain canvas */
+  #heart-rain { position:fixed; inset:0; z-index:9999; pointer-events:none; display:none; }
+</style>
+
+<canvas id="heart-rain"></canvas>
+
+<script>
+const out = document.getElementById('output');
+const inp = document.getElementById('cmd-input');
+const promptSpan = document.querySelector('.input-prompt');
+let history = [], histIdx = -1;
+
+// ── STATE ──
+let cwd = '/';
+let isRoot = false;
+let inKalbim = false;
+let matrixLocked = false;
+
+// ── HELPERS ──
+function line(cls, html) {
+  const s = document.createElement('span');
+  s.className = 'line';
+  s.innerHTML = `<span class="${cls}">${html}</span>`;
+  out.appendChild(s);
+  out.scrollTop = out.scrollHeight;
+}
+function blank() { line('p-dim','&nbsp;'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function updatePrompt() {
+  if (inKalbim) {
+    promptSpan.textContent = 'root@kalp:~/kalbim#';
+    promptSpan.style.color = '#ff69b4';
+    promptSpan.style.textShadow = '0 0 10px rgba(255,105,180,0.8)';
+  } else if (isRoot) {
+    promptSpan.textContent = 'root@kalp:~#';
+    promptSpan.style.color = '#ff1f8e';
+    promptSpan.style.textShadow = '0 0 10px rgba(255,30,140,0.6)';
+  } else {
+    promptSpan.textContent = 'ikbal@kalp:~$';
+    promptSpan.style.color = '';
+    promptSpan.style.textShadow = '';
+  }
+}
+
+function showPromptLine(raw) {
+  const s = document.createElement('span');
+  s.className = 'line';
+  const sym = inKalbim ? 'root@kalp:~/kalbim#' : isRoot ? 'root@kalp:~#' : 'ikbal@kalp:~$';
+  const symCol = (isRoot || inKalbim) ? '#ff1f8e' : 'var(--dim)';
+  s.innerHTML = `<span style="color:${symCol}">${sym}</span> <span class="p-cmd">${esc(raw)}</span>`;
+  out.appendChild(s);
+  out.scrollTop = out.scrollHeight;
+}
+
+// ── FILESYSTEM ──
+const fs = {
+  '/': ['sevgi/', 'kalbim/', 'ikbal.txt', 'sonsuz.log', 'kalp.sh'],
+  '/sevgi': ['ilk_bakis.jpg', 'gulusun.mp3', 'elele.gif', 'readme.md', 'backdoor.sh'],
+  '/kalbim': ['kalp.log'],
+};
+
+const fileContents = {
+  'ikbal.txt': [
+    'İsim   : İkbal',
+    'Durum  : Kalbimin sahibi ❤️',
+    'Özellik: Her şey güzel oluyor',
+    'Versiyon: Sonsuz',
+  ],
+  'sonsuz.log': [
+    '[00:00] Seni gördüm',
+    '[00:01] Kalbim hızlandı',
+    '[00:02] Güldün',
+    '[00:03] Artık sonsuz...',
+  ],
+  'readme.md': [
+    '# ~/sevgi — README',
+    '',
+    '  Bu dizin çok özel. Dikkatli ol.',
+    '',
+    '## Backdoor Nedir?',
+    '  backdoor.sh, /kalbim dizinine açılan gizli kapıdır.',
+    '  Normal kullanıcı bu dizine giremez.',
+    '  Sadece root erişimiyle mümkün.',
+    '',
+    '## Nasıl Çalıştırılır?',
+    '  1. Önce /sevgi dizinine git:',
+    '       cd sevgi',
+    '  2. Sonra şu komutu çalıştır:',
+    '       ./backdoor.sh',
+    '  3. CVE-9999-9999 açığı exploit edilir',
+    '     ve root shell aktif olur.',
+    '  4. Artık /kalbim dizinine girebilirsin:',
+    '       cd /kalbim',
+    '',
+    '  ⚠️  UYARI: Girdiğinde her şey değişir.',
+  ],
+  'backdoor.sh': [
+    '#!/bin/bash',
+    '# CVE-9999-9999 — Love Privilege Escalation',
+    'echo "backdoor başlatılıyor..."',
+    'exec ./backdoor.sh  # calistirmak icin: ./backdoor.sh',
+  ],
+  'kalp.log': [
+    '[❤️] lub...',
+    '[❤️] dub...',
+    '  > İkbali seviyorum',
+    '[❤️] lub...',
+    '[❤️] dub...',
+    '  > İkbali seviyorum',
+    '[❤️] lub...',
+    '[❤️] dub...',
+    '  > Çok çok seviyorum',
+    '[❤️] lub...',
+    '[❤️] dub...',
+    '  > Hep böyle kalmasını istiyorum',
+    '[❤️] lub...',
+    '[❤️] dub...',
+    '  > İkbali seviyorum ❤️',
+  ],
+};
+
+// ── BOOT ──
+function boot(){
+  line('p-dim','╔══════════════════════════════════════════════════════╗');
+  line('p-dim','║');
+  line('p-bright','║   ██╗██╗  ██╗██████╗  █████╗ ██╗     ');
+  line('p-bright','║   ██║██║ ██╔╝██╔══██╗██╔══██╗██║     ');
+  line('p-bright','║   ██║█████╔╝ ██████╔╝███████║██║     ');
+  line('p-bright','║   ██║██╔═██╗ ██╔══██╗██╔══██║██║     ');
+  line('p-bright','║   ██║██║  ██╗██████╔╝██║  ██║███████╗');
+  line('p-bright','║   ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚══════╝');
+  line('p-dim','║');
+  line('p-out','║   Love Terminal v2.0 — Seninle konuşmak için buradayım 💗');
+  line('p-dim','╚══════════════════════════════════════════════════════╝');
+  blank();
+  line('p-white','  Komutlar için <span class="p-bright">help</span> yazabilirsin.');
+  line('p-dim','  (↑ ↓ ile geçmiş, Tab ile tamamlama)');
+  blank();
+}
+
+// ── COMMANDS ──
+const commands = {
+
+  help() {
+    blank();
+    line('p-bright','  ╔═══════════════════════════════════════╗');
+    line('p-bright','  ║   Kullanılabilir Komutlar              ║');
+    line('p-bright','  ╚═══════════════════════════════════════╝');
+    blank();
+    const cmds = [
+      ['help','bu menüyü göster'],
+      ['ls [dizin]','dosyaları listele'],
+      ['cat &lt;dosya&gt;','dosya içeriğini oku'],
+      ['cd &lt;dizin&gt;','dizin değiştir'],
+      ['pwd','neredesin'],
+      ['echo &lt;metin&gt;','metni yansıt'],
+      ['ping &lt;hedef&gt;','hedefe ping at'],
+      ['./backdoor.sh','🔓 (sevgi/ içinde)'],
+      ['./kalp.sh','💗 (root gerekli)'],
+      ['whoami','kimsin'],
+      ['date','tarih'],
+      ['love','❤️'],
+      ['matrix','⚠️ 30 saniyelik kilit'],
+      ['exit','kalbim\'den çık'],
+      ['clear','temizle'],
+    ];
+    cmds.forEach(([c,d])=>{
+      line('p-white',`  <span class="p-bright">${c}</span><span class="p-dim" style="margin-left:1rem">— ${d}</span>`);
+    });
+    blank();
+  },
+
+  ls(args) {
+    let path = cwd;
+    if (args[0]) {
+      const t = args[0].startsWith('/') ? args[0] : (cwd==='/'?'/'+args[0]:cwd+'/'+args[0]);
+      path = t.replace(/\/+$/,'') || '/';
+    }
+    if (path === '/kalbim' && !isRoot) {
+      line('p-err','  ls: /kalbim: Permission denied — önce root olman gerekiyor 🔒');
+      blank(); return;
+    }
+    const items = fs[path];
+    if(!items){ line('p-err',`  ls: '${esc(path)}': No such file or directory`); return; }
+    blank();
+    line('p-dim',`  total ${items.length}`);
+    items.forEach(item=>{
+      if(item.endsWith('/'))       { line('p-bright',`  ${item}`); }
+      else if(item.endsWith('.sh')){ line('p-green', `  ${item}`); }
+      else if(item.endsWith('.log')){ line('p-yellow',`  ${item}`); }
+      else                         { line('p-white',  `  ${item}`); }
+    });
+    blank();
+  },
+
+  cat(args) {
+    if(!args[0]){ line('p-err','  cat: dosya adı belirt'); return; }
+    if (args[0].includes('kalbim') && !isRoot) {
+      line('p-err','  cat: Permission denied — root gerekli 🔒'); blank(); return;
+    }
+    const name = args[0].replace(/.*\//,'');
+    const content = fileContents[name];
+    if(!content){ line('p-err',`  cat: ${esc(args[0])}: No such file or directory`); return; }
+    blank();
+    content.forEach(l => {
+      if(l.startsWith('[❤️]')) line('p-heart','  '+esc(l));
+      else if(l.startsWith('  > ')) line('p-bright','  '+esc(l));
+      else if(l.startsWith('#')) line('p-green','  '+esc(l));
+      else if(l.startsWith('  ')) line('p-dim','  '+esc(l));
+      else line('p-white','  '+esc(l));
+    });
+    blank();
+  },
+
+  cd(args) {
+    if(!args[0] || args[0]==='/') {
+      cwd='/'; inKalbim=false;
+      document.body.classList.remove('kalbim-mode');
+      updatePrompt();
+      line('p-dim','  /'); return;
+    }
+    const target = args[0].startsWith('/') ? args[0] : (cwd==='/'?'/'+args[0]:cwd+'/'+args[0]);
+    const clean = target.replace(/\/+$/,'') || '/';
+
+    if (clean === '/kalbim' && !isRoot) {
+      line('p-err','  cd: /kalbim: Permission denied');
+      line('p-dim','  💡 İpucu: önce ./backdoor.sh çalıştır (sevgi/ dizininde)');
+      blank(); return;
+    }
+    if (fs[clean] !== undefined) {
+      cwd = clean;
+      const wasKalbim = inKalbim;
+      inKalbim = (clean === '/kalbim');
+      if (inKalbim && !wasKalbim) enterKalbim();
+      if (!inKalbim && wasKalbim) leaveKalbim();
+      updatePrompt();
+      line('p-dim','  '+cwd+'/');
+    } else {
+      line('p-err',`  cd: ${esc(args[0])}: No such file or directory`);
+    }
+  },
+
+  exit() {
+    if (inKalbim) {
+      leaveKalbim();
+      cwd = '/';
+      inKalbim = false;
+      updatePrompt();
+      blank();
+      line('p-out','  /kalbim\'den çıkıldı. Normal terminale dönüldü. 💗');
+      blank();
+    } else {
+      line('p-dim','  Çıkacak özel bir kabuk yok. (kalbim modunda değilsin)');
+    }
+  },
+
+  pwd() { blank(); line('p-white','  '+cwd+'/'); blank(); },
+
+  echo(args) {
+    const text = args.join(' ');
+    if(!text){ line('p-dim','  (boş)'); return; }
+    blank();
+    line('p-bright','  >> '+esc(text)+' <<');
+    blank();
+  },
+
+  ping(args) {
+    const host = args[0] || 'ikbal.kalp';
+    blank();
+    line('p-dim',`  PING ${esc(host)}: 56 data bytes`);
+    let i=0;
+    const iv = setInterval(()=>{
+      if(i>=4){ clearInterval(iv);
+        blank(); line('p-green',`  4 packets, 4 received, 0% loss 💗`); blank(); return; }
+      line('p-heart',`  ❤️  64 bytes from ${esc(host)}: seq=${i} ttl=∞ time=${(Math.random()*2).toFixed(3)}ms`);
+      i++;
+    },500);
+  },
+
+  whoami() {
+    blank();
+    if(isRoot){
+      line('p-bright','  root');
+      line('p-dim','  uid=0(root) gid=0(root) groups=0(root),love,ikbal');
+    } else {
+      line('p-bright','  biri_seni_cok_seven_biri');
+      line('p-dim','  uid=love(sonsuz) gid=kalp groups=ikbal,mutluluk');
+    }
+    blank();
+  },
+
+  date() {
+    blank();
+    const d = new Date();
+    line('p-white','  '+d.toLocaleDateString('tr-TR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
+    line('p-white','  '+d.toLocaleTimeString('tr-TR'));
+    line('p-dim','  (Seninle geçen her an güzel ❤️)');
+    blank();
+  },
+
+  love() {
+    blank();
+    const hearts = ['❤️','💕','💗','💖','💓','💘','💝','💞','❤️‍🔥'];
+    for(let r=0;r<5;r++){
+      let row='  ';
+      for(let c=0;c<9;c++) row+=hearts[Math.floor(Math.random()*hearts.length)]+'  ';
+      line('p-heart',row);
+    }
+    blank();
+    line('p-bright','  Seni çok seviyorum, İkbal 💗');
+    blank();
+  },
+
+  matrix() {
+    if(matrixLocked) return;
+    matrixLocked = true;
+    inp.disabled = true;
+    blank();
+    line('p-bright','  ⚠️  UYARI: matrix.exe başlatılıyor — 30 saniye kilit');
+    blank();
+    document.body.classList.add('matrix-mode');
+    startHeartRain(30);
+    setTimeout(()=>{
+      matrixLocked = false;
+      inp.disabled = false;
+      document.body.classList.remove('matrix-mode');
+      stopHeartRain();
+      blank();
+      line('p-bright','  THE ONE IS IKBAL 💗');
+      line('p-dim','  matrix sonlandırıldı. Terminal serbest.');
+      blank();
+      inp.focus();
+    }, 30000);
+  },
+
+  clear() { out.innerHTML=''; },
+};
+
+// ── SPECIAL EXECUTABLES ──
+function runBackdoor() {
+  if (cwd !== '/sevgi') {
+    line('p-err','  bash: ./backdoor.sh: önce cd sevgi yapmalısın');
+    blank(); return;
+  }
+  blank();
+  line('p-dim','  ┌─────────────────────────────────────────┐');
+  line('p-dim','  │  backdoor.sh başlatılıyor...             │');
+  line('p-dim','  └─────────────────────────────────────────┘');
+  blank();
+
+  const steps = [
+    [300,  'p-dim',   '  [*] Hedef tespit edildi: love_kernel v9.9.9'],
+    [700,  'p-dim',   '  [*] CVE-9999-9999 exploit yükleniyor...'],
+    [1200, 'p-yellow','  [!] Açık bulundu: Sonsuz Sevgi Buffer Overflow'],
+    [1700, 'p-dim',   '  [*] Payload enjekte ediliyor... ❤️'],
+    [2200, 'p-dim',   '  [*] Privilege escalation çalışıyor...'],
+  ];
+
+  // Heart ASCII art
+  const heartArt = [
+    '        ██████  ██████   ',
+    '      ████████████████   ',
+    '     ██████████████████  ',
+    '      ████████████████   ',
+    '        ████████████     ',
+    '          ████████       ',
+    '            ████         ',
+    '             ██          ',
+  ];
+
+  steps.forEach(([delay, cls, text]) => {
+    setTimeout(()=>{ line(cls, text); out.scrollTop=out.scrollHeight; }, delay);
+  });
+
+  setTimeout(()=>{
+    blank();
+    heartArt.forEach(row => line('p-bright', row));
+    blank();
+  }, 2700);
+
+  setTimeout(()=>{
+    line('p-bright','  ╔═══════════════════════════════════════════════╗');
+    line('p-bright','  ║  💗  BACKDOOR ÇALIŞTIRILDI  💗               ║');
+    line('p-bright','  ║  CVE-9999-9999 — Love Privilege Escalation    ║');
+    line('p-bright','  ╚═══════════════════════════════════════════════╝');
+    blank();
+    line('p-green', '  [✓] Root shell aktif!');
+    line('p-green', '  [✓] /kalbim dizinine erişim açıldı.');
+    blank();
+    line('p-dim',   '  Artık şunu çalıştırabilirsin: cd /kalbim');
+    blank();
+    isRoot = true;
+    updatePrompt();
+  }, 3800);
+}
+
+function runKalpSh() {
+  if (!isRoot) {
+    line('p-err','  bash: ./kalp.sh: Permission denied — root gerekli');
+    line('p-dim','  💡 Önce ./backdoor.sh çalıştır (sevgi/ dizininde)');
+    blank(); return;
+  }
+  blank();
+  line('p-dim','  [kalp.sh başlatılıyor...]');
+  blank();
+
+  const sizes  = [1.0, 1.5, 2.0, 2.5, 3.0, 2.5, 2.0, 1.5, 1.0];
+  const emojis = ['❤️','💗','💖','💘','❤️‍🔥','💝','💕','💓','💞'];
+
+  // ASCII hearts of different sizes (simple block version)
+  const smol = [' ♥ ',' ♥♥♥ ',' ♥ '];
+  const med  = [' ██ ██ ','████████',' ██████ ','  ████  ','   ██   '];
+  const big  = ['  ████   ████  ',' ████████████ ','██████████████',' ████████████ ','  ██████████  ','    ████████  ','      ████    ','       ██     '];
+
+  // Show them staggered
+  let t = 200;
+  emojis.forEach((e, i) => {
+    setTimeout(()=>{
+      const sz = sizes[i];
+      const pad = '  ' + ' '.repeat(Math.floor((3-sz)*4));
+      const emoji_row = (e+' ').repeat(Math.max(1,Math.round(sz*3)));
+      line('p-heart', pad + emoji_row);
+      if (i === 4) { // center — biggest
+        blank();
+        line('p-bright','         ╔═══════════════════════╗');
+        line('p-bright','         ║  İkbali seviyorum ❤️   ║');
+        line('p-bright','         ╚═══════════════════════╝');
+        blank();
+      }
+    }, t);
+    t += 150;
+  });
+
+  setTimeout(()=>{
+    blank();
+    line('p-bright','  kalp.sh tamamlandı. Her çalıştırmada yeni kalbim var. 💗');
+    blank();
+  }, t + 200);
+}
+
+// ── KALBIM ENTER / LEAVE ──
+function enterKalbim() {
+  document.body.classList.add('kalbim-mode');
+  blank();
+  setTimeout(()=>{
+    line('p-bright','  ╔══════════════════════════════════════════════╗');
+    line('p-bright','  ║                                              ║');
+    line('p-bright','  ║   💗  ARTIK KONTROL SENDE  💗               ║');
+    line('p-bright','  ║   Dünyamı güzelleştirdin.                   ║');
+    line('p-bright','  ║                                              ║');
+    line('p-bright','  ╚══════════════════════════════════════════════╝');
+    blank();
+    line('p-dim','  (çıkmak için: exit)');
+    blank();
+  }, 200);
+}
+
+function leaveKalbim() {
+  document.body.classList.remove('kalbim-mode');
+}
+
+// ── HEART RAIN (matrix) ──
+const canvas = document.getElementById('heart-rain');
+const ctx = canvas.getContext('2d');
+let rainAnim = null;
+let rainParticles = [];
+const RAIN_EMOJIS = ['❤️','💗','💕','💖','💓','💘','💝','❤️‍🔥','🌸','✨'];
+
+function startHeartRain(seconds) {
+  canvas.style.display = 'block';
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  rainParticles = [];
+  for (let i = 0; i < 60; i++) {
+    rainParticles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      size: 16 + Math.random() * 32,
+      speed: 1.5 + Math.random() * 3,
+      emoji: RAIN_EMOJIS[Math.floor(Math.random() * RAIN_EMOJIS.length)],
+      opacity: 0.6 + Math.random() * 0.4,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    rainParticles.forEach(p => {
+      ctx.globalAlpha = p.opacity;
+      ctx.font = p.size + 'px serif';
+      ctx.fillText(p.emoji, p.x, p.y);
+      p.y += p.speed;
+      if (p.y > canvas.height + 40) {
+        p.y = -40;
+        p.x = Math.random() * canvas.width;
+        p.emoji = RAIN_EMOJIS[Math.floor(Math.random() * RAIN_EMOJIS.length)];
+      }
+    });
+    ctx.globalAlpha = 1;
+    rainAnim = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function stopHeartRain() {
+  if (rainAnim) cancelAnimationFrame(rainAnim);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  canvas.style.display = 'none';
+  rainParticles = [];
+}
+
+window.addEventListener('resize', ()=>{
+  if (canvas.style.display !== 'none') {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+});
+
+// ── RUN ──
+function run(raw){
+  const trimmed = raw.trim();
+  if (!trimmed) return;
+  if (matrixLocked) return;
+  history.unshift(trimmed); histIdx = -1;
+  showPromptLine(trimmed);
+
+  // special executables
+  if (trimmed === './backdoor.sh') { runBackdoor(); return; }
+  if (trimmed === './kalp.sh')     { runKalpSh();   return; }
+
+  const parts = trimmed.split(/\s+/);
+  const cmd = parts[0].toLowerCase();
+  const args = parts.slice(1);
+
+  if (commands[cmd]) { commands[cmd](args); }
+  else { line('p-err',`  command not found: ${esc(cmd)} — 'help' dene 💗`); blank(); }
+}
+
+inp.addEventListener('keydown', e=>{
+  if (matrixLocked) { e.preventDefault(); return; }
+  if (e.key==='Enter')     { run(inp.value); inp.value=''; }
+  if (e.key==='ArrowUp')   { e.preventDefault(); if(histIdx<history.length-1){histIdx++;inp.value=history[histIdx];} }
+  if (e.key==='ArrowDown') { e.preventDefault(); if(histIdx>0){histIdx--;inp.value=history[histIdx];}else{histIdx=-1;inp.value='';} }
+  if (e.key==='Tab')       { e.preventDefault();
+    const keys = [...Object.keys(commands), './backdoor.sh','./kalp.sh'];
+    const match = keys.find(k=>k.startsWith(inp.value));
+    if(match) inp.value=match;
+  }
+});
+
+document.addEventListener('click', ()=>{ if(!matrixLocked) inp.focus(); });
+
+boot();
+inp.focus();
+</script>
+</body>
+</html>
