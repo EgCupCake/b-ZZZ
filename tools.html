@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/tools — ikbal.exe</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Pacifico&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0008; --pink: #ff6eb4; --bright: #ff1f8e; --dim: #6b1a3e;
+    --mid: #9b2060; --card: #110009; --border: #3a0025;
+    --green: #8affc1; --yellow: #ffe07a; --white: #ffe0f5; --cyan: #88eeff;
+    --glow: rgba(255,110,180,0.35);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--pink); font-family:'Share Tech Mono',monospace; min-height:100vh; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,110,180,0.015) 2px,rgba(255,110,180,0.015) 4px); }
+
+  /* NAV */
+  nav { position:fixed; top:0; left:0; right:0; z-index:1000;
+    background:rgba(13,0,8,0.97); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--dim);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 2rem; height:56px; box-shadow:0 2px 20px rgba(255,30,140,0.15); }
+  .nav-logo { color:var(--pink); font-size:1.05rem; text-shadow:0 0 10px var(--glow); letter-spacing:2px; }
+  .nav-logo span { color:var(--bright); }
+  .nav-links { display:flex; gap:0.3rem; list-style:none; flex-wrap:wrap; }
+  .nav-links a { font-size:0.72rem; color:var(--dim); text-decoration:none;
+    padding:0.35rem 0.7rem; border:1px solid transparent; border-radius:4px; transition:all 0.2s; letter-spacing:1px; }
+  .nav-links a:hover, .nav-links a.active { color:var(--pink); border-color:var(--dim);
+    text-shadow:0 0 8px var(--glow); background:rgba(255,110,180,0.06); }
+  @media(max-width:700px){ .nav-links a { font-size:0.62rem; padding:0.3rem 0.45rem; } }
+
+  /* LAYOUT */
+  .wrap { max-width:1000px; margin:0 auto; padding:74px 1.5rem 3rem; position:relative; z-index:1; }
+
+  /* HEADER */
+  .page-header { text-align:center; margin-bottom:2rem; }
+  .page-title { font-family:'Pacifico',cursive; font-size:clamp(1.8rem,5vw,2.8rem);
+    color:var(--bright); text-shadow:0 0 20px var(--glow),2px 3px 0 rgba(255,30,140,0.25); margin-bottom:0.4rem; }
+  .page-sub { color:var(--dim); font-size:0.82rem; letter-spacing:2px; }
+
+  /* GLOBAL TARGET */
+  .target-bar {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:1.2rem 1.5rem; margin-bottom:2rem;
+    display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+    box-shadow:0 0 30px rgba(255,30,140,0.08);
+  }
+  .target-label { color:var(--mid); font-size:0.85rem; white-space:nowrap; }
+  .target-input {
+    flex:1; min-width:200px; background:rgba(255,110,180,0.05);
+    border:1px solid var(--border); border-radius:6px; padding:0.6rem 1rem;
+    color:var(--white); font-family:'Share Tech Mono',monospace; font-size:0.9rem;
+    outline:none; transition:border-color 0.2s;
+  }
+  .target-input:focus { border-color:var(--mid); }
+  .target-input::placeholder { color:var(--dim); }
+  .target-badge { font-size:0.72rem; color:var(--dim); }
+
+  /* TOOL CARD */
+  .tool-card {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    margin-bottom:1.5rem; overflow:hidden;
+    box-shadow:0 0 20px rgba(255,30,140,0.06);
+    transition:border-color 0.2s;
+  }
+  .tool-card:hover { border-color:var(--mid); }
+
+  .tool-header {
+    display:flex; align-items:center; gap:1rem; padding:1rem 1.5rem;
+    border-bottom:1px solid var(--border); cursor:pointer;
+    user-select:none; -webkit-user-select:none;
+  }
+  .tool-icon { font-size:1.4rem; }
+  .tool-name { font-size:1.1rem; color:var(--bright); letter-spacing:2px; }
+  .tool-desc { font-size:0.75rem; color:var(--dim); margin-left:auto; }
+  .tool-arrow { color:var(--dim); transition:transform 0.2s; font-size:0.8rem; }
+  .tool-card.open .tool-arrow { transform:rotate(90deg); }
+
+  .tool-body { display:none; padding:1.2rem 1.5rem 1.5rem; }
+  .tool-card.open .tool-body { display:block; }
+
+  /* OPTIONS GRID */
+  .options-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.8rem; margin-bottom:1.2rem; }
+
+  .opt-group { display:flex; flex-direction:column; gap:0.3rem; }
+  .opt-label { font-size:0.72rem; color:var(--mid); letter-spacing:1px; }
+  .opt-select, .opt-input {
+    background:rgba(255,110,180,0.04); border:1px solid var(--border);
+    border-radius:5px; padding:0.45rem 0.7rem;
+    color:var(--white); font-family:'Share Tech Mono',monospace; font-size:0.82rem;
+    outline:none; transition:border-color 0.2s; cursor:pointer;
+  }
+  .opt-select:focus, .opt-input:focus { border-color:var(--mid); }
+  .opt-select option { background:#1a0010; color:var(--white); }
+  .opt-input::placeholder { color:var(--dim); }
+
+  /* CHECKBOXES */
+  .flags-row { display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.2rem; }
+  .flag-item { display:flex; align-items:center; gap:0.4rem; cursor:pointer; }
+  .flag-item input[type=checkbox] {
+    accent-color:var(--bright); width:14px; height:14px; cursor:pointer;
+  }
+  .flag-item label { font-size:0.78rem; color:var(--dim); cursor:pointer; transition:color 0.15s; }
+  .flag-item:hover label { color:var(--pink); }
+
+  /* GENERATED COMMAND */
+  .cmd-section { margin-top:0.5rem; }
+  .cmd-label { font-size:0.72rem; color:var(--mid); letter-spacing:2px; margin-bottom:0.4rem; }
+  .cmd-row { display:flex; align-items:flex-start; gap:0.7rem; }
+  .cmd-output {
+    flex:1; background:rgba(255,110,180,0.04); border:1px solid var(--border);
+    border-radius:6px; padding:0.7rem 1rem;
+    color:var(--green); font-family:'Share Tech Mono',monospace;
+    font-size:clamp(0.75rem,2vw,0.88rem); line-height:1.6;
+    white-space:pre-wrap; word-break:break-all;
+    min-height:52px;
+  }
+  .copy-btn {
+    flex-shrink:0; background:transparent; border:1px solid var(--dim);
+    color:var(--dim); padding:0.5rem 0.9rem; border-radius:5px;
+    font-family:'Share Tech Mono',monospace; font-size:0.78rem;
+    cursor:pointer; transition:all 0.2s; letter-spacing:1px; white-space:nowrap;
+    align-self:flex-start;
+  }
+  .copy-btn:hover { border-color:var(--pink); color:var(--pink); text-shadow:0 0 6px var(--glow); }
+  .copy-btn.copied { border-color:var(--green); color:var(--green); }
+
+  .divider { border:none; border-top:1px solid var(--border); margin:1.5rem 0; }
+
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--dim); border-radius:6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">&gt; <span>ikbal</span>.exe</div>
+  <ul class="nav-links">
+    <li><a href="index.html">~/sevgi</a></li>
+    <li><a href="cmd.html">~/terminal</a></li>
+    <li><a href="cipher.html">~/sifrele</a></li>
+    <li><a href="zaman.html">~/zaman</a></li>
+    <li><a href="ukulele.html">~/ukulele</a></li>
+    <li><a href="payloads.html">~/payloads</a></li>
+    <li><a href="tools.html" class="active">~/tools</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+
+  <div class="page-header">
+    <h1 class="page-title">🔧 Tools</h1>
+    <p class="page-sub">// komut_üreteci.sh — domain gir, komutu al, yapıştır</p>
+  </div>
+
+  <!-- GLOBAL TARGET -->
+  <div class="target-bar">
+    <span class="target-label">🎯 hedef:</span>
+    <input class="target-input" id="global-target" type="text"
+      placeholder="example.com" autocomplete="off" spellcheck="false"
+      oninput="updateAll()">
+    <span class="target-badge">http/https otomatik eklenir</span>
+  </div>
+
+  <div id="tools-container"></div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  TOOL DEFINITIONS
+// ══════════════════════════════════════
+const TOOLS = [
+
+  {
+    id: 'nuclei',
+    icon: '☢️',
+    name: 'nuclei',
+    desc: 'vulnerability scanner',
+    options: [
+      { id:'rate',   label:'Rate Limit (rps)', type:'select',
+        values:['10','25','50','100','150','200','unlimited'],
+        default:'50' },
+      { id:'concurrency', label:'Concurrency (-c)', type:'select',
+        values:['10','25','50','100','200'], default:'25' },
+      { id:'severity', label:'Severity (-s)', type:'select',
+        values:['all','critical','high','medium','low,medium,high,critical','critical,high'], default:'all' },
+      { id:'templates', label:'Template (-t)', type:'select',
+        values:['(tümü)','cves/','exposures/','misconfiguration/','takeovers/','technologies/','network/','fuzzing/'], default:'(tümü)' },
+      { id:'output', label:'Çıktı dosyası', type:'input', placeholder:'output.txt', default:'' },
+    ],
+    flags: [
+      { id:'silent',  flag:'-silent',       label:'-silent (sessiz mod)' },
+      { id:'json',    flag:'-jsonl',         label:'-jsonl (JSON çıktı)' },
+      { id:'retries', flag:'-retries 3',     label:'-retries 3' },
+      { id:'nocolor', flag:'-no-color',      label:'-no-color' },
+      { id:'stats',   flag:'-stats',         label:'-stats (canlı istatistik)' },
+    ],
+    build(target, opts, flags) {
+      let cmd = 'nuclei';
+      cmd += ' -u ' + target;
+      if (opts.rate !== 'unlimited') cmd += ' -rl ' + opts.rate;
+      cmd += ' -c ' + opts.concurrency;
+      if (opts.severity !== 'all') cmd += ' -s ' + opts.severity;
+      if (opts.templates !== '(tümü)') cmd += ' -t ' + opts.templates;
+      if (opts.output) cmd += ' -o ' + opts.output;
+      flags.forEach(f => { cmd += ' ' + f; });
+      return cmd;
+    }
+  },
+
+  {
+    id: 'gobuster',
+    icon: '👻',
+    name: 'gobuster',
+    desc: 'directory & dns brute force',
+    options: [
+      { id:'mode', label:'Mod', type:'select',
+        values:['dir','dns','vhost','fuzz'], default:'dir' },
+      { id:'wordlist', label:'Wordlist (-w)', type:'select',
+        values:[
+          '/usr/share/wordlists/dirb/common.txt',
+          '/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt',
+          '/usr/share/wordlists/dirbuster/directory-list-2.3-small.txt',
+          '/usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt',
+          '/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt',
+          'custom...',
+        ], default:'/usr/share/wordlists/dirb/common.txt' },
+      { id:'customWordlist', label:'Custom wordlist yolu', type:'input', placeholder:'/path/to/wordlist.txt', default:'' },
+      { id:'threads', label:'Thread sayısı (-t)', type:'select',
+        values:['10','20','50','100','150'], default:'50' },
+      { id:'status', label:'Status kodları (-s)', type:'select',
+        values:['200,204,301,302,307,401,403','200,301,302','200','all'], default:'200,204,301,302,307,401,403' },
+      { id:'ext', label:'Uzantılar (-x)', type:'input', placeholder:'php,html,txt,js', default:'' },
+      { id:'output', label:'Çıktı dosyası (-o)', type:'input', placeholder:'gobuster.txt', default:'' },
+    ],
+    flags: [
+      { id:'noerrror', flag:'-e',            label:'-e (tam URL göster)' },
+      { id:'noerror',  flag:'--no-error',     label:'--no-error' },
+      { id:'quiet',    flag:'-q',             label:'-q (sessiz)' },
+      { id:'follow',   flag:'-r',             label:'-r (redirect takip)' },
+      { id:'wildcard', flag:'--wildcard',     label:'--wildcard' },
+    ],
+    build(target, opts, flags) {
+      const wl = opts.customWordlist || opts.wordlist;
+      let cmd = 'gobuster ' + opts.mode;
+      if (opts.mode === 'dns') {
+        cmd += ' -d ' + target.replace(/https?:\/\//,'');
+      } else {
+        cmd += ' -u ' + target;
+      }
+      cmd += ' -w ' + wl;
+      cmd += ' -t ' + opts.threads;
+      if (opts.mode === 'dir') {
+        cmd += ' -s ' + opts.status;
+        if (opts.ext) cmd += ' -x ' + opts.ext;
+      }
+      if (opts.output) cmd += ' -o ' + opts.output;
+      flags.forEach(f => { cmd += ' ' + f; });
+      return cmd;
+    }
+  },
+
+  {
+    id: 'subfinder',
+    icon: '🔍',
+    name: 'subfinder',
+    desc: 'subdomain discovery',
+    options: [
+      { id:'threads', label:'Thread (-t)', type:'select',
+        values:['10','20','50','100'], default:'10' },
+      { id:'timeout', label:'Timeout (-timeout)', type:'select',
+        values:['15','30','60'], default:'30' },
+      { id:'output', label:'Çıktı dosyası (-o)', type:'input', placeholder:'subdomains.txt', default:'' },
+    ],
+    flags: [
+      { id:'silent',  flag:'-silent',        label:'-silent' },
+      { id:'all',     flag:'-all',            label:'-all (tüm kaynaklar)' },
+      { id:'recursive', flag:'-recursive',   label:'-recursive' },
+      { id:'ip',      flag:'-ip',             label:'-ip (IP adreslerini göster)' },
+    ],
+    build(target, opts, flags) {
+      const domain = target.replace(/https?:\/\//,'').replace(/\/.*/,'');
+      let cmd = 'subfinder -d ' + domain;
+      cmd += ' -t ' + opts.threads;
+      cmd += ' -timeout ' + opts.timeout;
+      if (opts.output) cmd += ' -o ' + opts.output;
+      flags.forEach(f => { cmd += ' ' + f; });
+      return cmd;
+    }
+  },
+
+  {
+    id: 'katana',
+    icon: '🗡️',
+    name: 'katana',
+    desc: 'web crawler / spider',
+    options: [
+      { id:'depth', label:'Derinlik (-d)', type:'select',
+        values:['1','2','3','4','5'], default:'3' },
+      { id:'concurrency', label:'Concurrency (-c)', type:'select',
+        values:['5','10','20','50'], default:'10' },
+      { id:'rateLimit', label:'Rate Limit (-rl)', type:'select',
+        values:['10','25','50','150'], default:'50' },
+      { id:'timeout', label:'Timeout (-timeout)', type:'select',
+        values:['10','20','30'], default:'10' },
+      { id:'output', label:'Çıktı (-o)', type:'input', placeholder:'katana.txt', default:'' },
+    ],
+    flags: [
+      { id:'js',      flag:'-js-crawl',      label:'-js-crawl (JS parse)' },
+      { id:'silent',  flag:'-silent',         label:'-silent' },
+      { id:'forms',   flag:'-form-extraction', label:'-form-extraction' },
+      { id:'headless',flag:'-headless',       label:'-headless (Chromium)' },
+      { id:'known',   flag:'-known-files all',label:'-known-files all' },
+    ],
+    build(target, opts, flags) {
+      let cmd = 'katana -u ' + target;
+      cmd += ' -d ' + opts.depth;
+      cmd += ' -c ' + opts.concurrency;
+      cmd += ' -rl ' + opts.rateLimit;
+      cmd += ' -timeout ' + opts.timeout;
+      if (opts.output) cmd += ' -o ' + opts.output;
+      flags.forEach(f => { cmd += ' ' + f; });
+      return cmd;
+    }
+  },
+
+  {
+    id: 'ffuf',
+    icon: '💥',
+    name: 'ffuf',
+    desc: 'web fuzzer',
+    options: [
+      { id:'wordlist', label:'Wordlist (-w)', type:'select',
+        values:[
+          '/usr/share/wordlists/dirb/common.txt',
+          '/usr/share/seclists/Discovery/Web-Content/raft-large-words.txt',
+          '/usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt',
+          '/usr/share/seclists/Fuzzing/LFI/LFI-Jhaddix.txt',
+          'custom...',
+        ], default:'/usr/share/wordlists/dirb/common.txt' },
+      { id:'customWordlist', label:'Custom wordlist', type:'input', placeholder:'/path/to/list.txt', default:'' },
+      { id:'threads', label:'Thread (-t)', type:'select',
+        values:['10','20','40','100','200'], default:'40' },
+      { id:'mode', label:'Fuzz modu', type:'select',
+        values:['path (FUZZ)', 'subdomain (FUZZ.domain)', 'param (?param=FUZZ)', 'header'], default:'path (FUZZ)' },
+      { id:'mc', label:'Match status (-mc)', type:'select',
+        values:['all','200','200,301,302','200,301,302,403'], default:'200,301,302' },
+      { id:'fc', label:'Filter status (-fc)', type:'select',
+        values:['(yok)','404','404,403','404,400,500'], default:'404' },
+      { id:'output', label:'Çıktı (-o)', type:'input', placeholder:'ffuf.json', default:'' },
+    ],
+    flags: [
+      { id:'silent',  flag:'-s',             label:'-s (sessiz)' },
+      { id:'json',    flag:'-of json',        label:'-of json (JSON çıktı)' },
+      { id:'color',   flag:'-c',             label:'-c (renkli)' },
+      { id:'follow',  flag:'-r',             label:'-r (redirect takip)' },
+      { id:'recursion', flag:'-recursion -recursion-depth 2', label:'-recursion (derinlik 2)' },
+    ],
+    build(target, opts, flags) {
+      const wl = opts.customWordlist || opts.wordlist;
+      let url = target;
+      const mode = opts.mode;
+      if (mode === 'path (FUZZ)') url = target.replace(/\/$/,'') + '/FUZZ';
+      else if (mode === 'subdomain (FUZZ.domain)') url = 'https://FUZZ.' + target.replace(/https?:\/\//,'');
+      else if (mode === 'param (?param=FUZZ)') url = target + '?id=FUZZ';
+      else if (mode === 'header') url = target;
+
+      let cmd = 'ffuf -u ' + url;
+      cmd += ' -w ' + wl;
+      cmd += ' -t ' + opts.threads;
+      cmd += ' -mc ' + opts.mc;
+      if (opts.fc !== '(yok)') cmd += ' -fc ' + opts.fc;
+      if (mode === 'header') cmd += ' -H "X-Forwarded-For: FUZZ"';
+      if (opts.output) cmd += ' -o ' + opts.output;
+      flags.forEach(f => { cmd += ' ' + f; });
+      return cmd;
+    }
+  },
+
+  {
+    id: 'httpx',
+    icon: '🌐',
+    name: 'httpx',
+    desc: 'http probe & fingerprint',
+    options: [
+      { id:'input', label:'Input tipi', type:'select',
+        values:['tek domain (-u)','domain listesi (-l subdomains.txt)'], default:'tek domain (-u)' },
+      { id:'listFile', label:'Liste dosyası (-l)', type:'input', placeholder:'subdomains.txt', default:'' },
+      { id:'threads', label:'Thread (-t)', type:'select',
+        values:['25','50','100','200'], default:'50' },
+      { id:'output', label:'Çıktı (-o)', type:'input', placeholder:'live.txt', default:'' },
+    ],
+    flags: [
+      { id:'title',   flag:'-title',         label:'-title (sayfa başlığı)' },
+      { id:'status',  flag:'-status-code',   label:'-status-code' },
+      { id:'tech',    flag:'-tech-detect',   label:'-tech-detect (teknoloji)' },
+      { id:'ip',      flag:'-ip',            label:'-ip (IP göster)' },
+      { id:'cdn',     flag:'-cdn',           label:'-cdn' },
+      { id:'sc',      flag:'-sc',            label:'-sc (durum kodu filtre)' },
+      { id:'silent',  flag:'-silent',        label:'-silent' },
+      { id:'follow',  flag:'-follow-redirects', label:'-follow-redirects' },
+    ],
+    build(target, opts, flags) {
+      const domain = target.replace(/https?:\/\//,'').replace(/\/.*/,'');
+      let cmd = 'httpx';
+      if (opts.input.startsWith('tek')) {
+        cmd += ' -u ' + domain;
+      } else {
+        const lf = opts.listFile || 'subdomains.txt';
+        cmd += ' -l ' + lf;
+      }
+      cmd += ' -t ' + opts.threads;
+      if (opts.output) cmd += ' -o ' + opts.output;
+      flags.forEach(f => { cmd += ' ' + f; });
+      return cmd;
+    }
+  },
+
+  {
+    id: 'nmap',
+    icon: '🗺️',
+    name: 'nmap',
+    desc: 'port scanner',
+    options: [
+      { id:'scan', label:'Tarama tipi', type:'select',
+        values:['-sV (servis versiyon)','-sS (SYN stealth)','-sC (default script)','-sV -sC (full)','-A (aggressive)','-sn (ping only)'],
+        default:'-sV (servis versiyon)' },
+      { id:'ports', label:'Port aralığı (-p)', type:'select',
+        values:['(top 1000)','1-65535','80,443,8080,8443','21,22,23,25,53,80,110,443','1-1000'], default:'(top 1000)' },
+      { id:'speed', label:'Hız (-T)', type:'select',
+        values:['T0 (paranoid)','T1 (sneaky)','T2 (polite)','T3 (normal)','T4 (aggressive)','T5 (insane)'], default:'T4 (aggressive)' },
+      { id:'output', label:'Çıktı (-oN)', type:'input', placeholder:'nmap.txt', default:'' },
+    ],
+    flags: [
+      { id:'v',       flag:'-v',             label:'-v (verbose)' },
+      { id:'reason',  flag:'--reason',        label:'--reason' },
+      { id:'open',    flag:'--open',          label:'--open (açık portlar)' },
+      { id:'script',  flag:'--script=vuln',   label:'--script=vuln' },
+    ],
+    build(target, opts, flags) {
+      const host = target.replace(/https?:\/\//,'').replace(/\/.*/,'');
+      const scanType = opts.scan.split(' ')[0];
+      const speed = '-' + opts.speed.split(' ')[0];
+      let cmd = 'nmap ' + scanType + ' ' + speed;
+      if (opts.ports !== '(top 1000)') cmd += ' -p ' + opts.ports;
+      flags.forEach(f => { cmd += ' ' + f; });
+      if (opts.output) cmd += ' -oN ' + opts.output;
+      cmd += ' ' + host;
+      return cmd;
+    }
+  },
+
+  {
+    id: 'wpscan',
+    icon: '🔑',
+    name: 'wpscan',
+    desc: 'wordpress scanner',
+    options: [
+      { id:'enumerate', label:'Enumerate (-e)', type:'select',
+        values:['ap,at,cb,dbe (tümü)','u (kullanıcılar)','p (pluginler)','t (temalar)','ap (tüm pluginler)','vp (vulnerable plugins)','vt (vulnerable themes)'],
+        default:'ap,at,cb,dbe (tümü)' },
+      { id:'threads', label:'Thread (-t)', type:'select',
+        values:['5','10','20','50'], default:'10' },
+      { id:'apitoken', label:'API Token (--api-token)', type:'input', placeholder:'TOKEN', default:'' },
+      { id:'output', label:'Çıktı (-o)', type:'input', placeholder:'wpscan.txt', default:'' },
+    ],
+    flags: [
+      { id:'random',  flag:'--random-user-agent',   label:'--random-user-agent' },
+      { id:'force',   flag:'--force',                label:'--force' },
+      { id:'disablessl', flag:'--disable-tls-checks', label:'--disable-tls-checks' },
+    ],
+    build(target, opts, flags) {
+      const en = opts.enumerate.split(' ')[0];
+      let cmd = 'wpscan --url ' + target;
+      cmd += ' -e ' + en;
+      cmd += ' -t ' + opts.threads;
+      if (opts.apitoken) cmd += ' --api-token ' + opts.apitoken;
+      if (opts.output) cmd += ' -o ' + opts.output;
+      flags.forEach(f => { cmd += ' ' + f; });
+      return cmd;
+    }
+  },
+
+];
+
+// ══════════════════════════════════════
+//  BUILD UI
+// ══════════════════════════════════════
+const container = document.getElementById('tools-container');
+
+TOOLS.forEach(tool => {
+  // card
+  const card = document.createElement('div');
+  card.className = 'tool-card';
+  card.id = 'card-' + tool.id;
+
+  // header
+  const header = document.createElement('div');
+  header.className = 'tool-header';
+  header.onclick = () => {
+    card.classList.toggle('open');
+    updateCmd(tool.id);
+  };
+  header.innerHTML = `
+    <span class="tool-icon">${tool.icon}</span>
+    <span class="tool-name">${tool.name}</span>
+    <span class="tool-desc">${tool.desc}</span>
+    <span class="tool-arrow">▶</span>
+  `;
+  card.appendChild(header);
+
+  // body
+  const body = document.createElement('div');
+  body.className = 'tool-body';
+
+  // options grid
+  const grid = document.createElement('div');
+  grid.className = 'options-grid';
+
+  tool.options.forEach(opt => {
+    const grp = document.createElement('div');
+    grp.className = 'opt-group';
+
+    const lbl = document.createElement('label');
+    lbl.className = 'opt-label';
+    lbl.textContent = opt.label;
+    grp.appendChild(lbl);
+
+    if (opt.type === 'select') {
+      const sel = document.createElement('select');
+      sel.className = 'opt-select';
+      sel.id = 'opt-' + tool.id + '-' + opt.id;
+      opt.values.forEach(v => {
+        const o = document.createElement('option');
+        o.textContent = v;
+        o.value = v;
+        if (v === opt.default) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', () => updateCmd(tool.id));
+      grp.appendChild(sel);
+    } else {
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'opt-input';
+      inp.id = 'opt-' + tool.id + '-' + opt.id;
+      inp.placeholder = opt.placeholder || '';
+      inp.value = opt.default || '';
+      inp.addEventListener('input', () => updateCmd(tool.id));
+      grp.appendChild(inp);
+    }
+    grid.appendChild(grp);
+  });
+  body.appendChild(grid);
+
+  // flags
+  if (tool.flags && tool.flags.length) {
+    const flagsLbl = document.createElement('div');
+    flagsLbl.className = 'opt-label';
+    flagsLbl.style.marginBottom = '0.4rem';
+    flagsLbl.textContent = 'FLAGS';
+    body.appendChild(flagsLbl);
+
+    const flagsRow = document.createElement('div');
+    flagsRow.className = 'flags-row';
+    tool.flags.forEach(f => {
+      const item = document.createElement('div');
+      item.className = 'flag-item';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = 'flag-' + tool.id + '-' + f.id;
+      cb.addEventListener('change', () => updateCmd(tool.id));
+      const lbl = document.createElement('label');
+      lbl.htmlFor = cb.id;
+      lbl.textContent = f.label;
+      item.appendChild(cb);
+      item.appendChild(lbl);
+      flagsRow.appendChild(item);
+    });
+    body.appendChild(flagsRow);
+  }
+
+  // divider
+  const div = document.createElement('hr');
+  div.className = 'divider';
+  body.appendChild(div);
+
+  // command output
+  const cmdSection = document.createElement('div');
+  cmdSection.className = 'cmd-section';
+  const cmdLbl = document.createElement('div');
+  cmdLbl.className = 'cmd-label';
+  cmdLbl.textContent = '// üretilen komut';
+  const cmdRow = document.createElement('div');
+  cmdRow.className = 'cmd-row';
+  const cmdOut = document.createElement('div');
+  cmdOut.className = 'cmd-output';
+  cmdOut.id = 'cmd-out-' + tool.id;
+  cmdOut.textContent = tool.name + ' -u <hedef>';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'copy-btn';
+  copyBtn.textContent = '📋 kopyala';
+  copyBtn.addEventListener('click', () => copyCmd(tool.id, copyBtn));
+  cmdRow.appendChild(cmdOut);
+  cmdRow.appendChild(copyBtn);
+  cmdSection.appendChild(cmdLbl);
+  cmdSection.appendChild(cmdRow);
+  body.appendChild(cmdSection);
+
+  card.appendChild(body);
+  container.appendChild(card);
+});
+
+// ══════════════════════════════════════
+//  UPDATE COMMANDS
+// ══════════════════════════════════════
+function getTarget() {
+  let t = document.getElementById('global-target').value.trim();
+  if (!t) return 'TARGET';
+  if (!t.match(/^https?:\/\//) && !t.startsWith('FUZZ')) t = 'https://' + t;
+  return t;
+}
+
+function updateCmd(toolId) {
+  const tool = TOOLS.find(t => t.id === toolId);
+  if (!tool) return;
+  const el = document.getElementById('cmd-out-' + toolId);
+  if (!el) return;
+
+  const target = getTarget();
+
+  // collect opts
+  const opts = {};
+  tool.options.forEach(opt => {
+    const el2 = document.getElementById('opt-' + toolId + '-' + opt.id);
+    if (el2) opts[opt.id] = el2.value;
+  });
+
+  // collect flags
+  const activeFlags = [];
+  if (tool.flags) {
+    tool.flags.forEach(f => {
+      const cb = document.getElementById('flag-' + toolId + '-' + f.id);
+      if (cb && cb.checked) activeFlags.push(f.flag);
+    });
+  }
+
+  el.textContent = tool.build(target, opts, activeFlags);
+}
+
+function updateAll() {
+  TOOLS.forEach(t => {
+    const card = document.getElementById('card-' + t.id);
+    if (card && card.classList.contains('open')) updateCmd(t.id);
+    else {
+      const el = document.getElementById('cmd-out-' + t.id);
+      if (el) updateCmd(t.id);
+    }
+  });
+}
+
+function copyCmd(toolId, btn) {
+  const el = document.getElementById('cmd-out-' + toolId);
+  if (!el) return;
+  const text = el.textContent;
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+  btn.textContent = '✓ kopyalandı';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = '📋 kopyala'; btn.classList.remove('copied'); }, 1500);
+}
+
+// open first tool by default
+document.getElementById('card-nuclei').classList.add('open');
+updateAll();
+</script>
+</body>
+</html>
