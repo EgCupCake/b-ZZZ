@@ -3,320 +3,365 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>İkbal için Nonogram 🎨</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<title>İkbal'in Nonogramı 🎨</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0e0e18;
-  --panel: #16162a;
-  --border: #252545;
-  --text: #ece8ff;
-  --dim: #666688;
-  --cs: 28px;
+  --bg: #1a1025; --card: #231830; --border: #3a2850;
+  --text: #f0eaff; --dim: #9988bb; --cs: 36px; --accent: #c084fc;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   background: var(--bg);
   background-image:
-    radial-gradient(ellipse 50% 50% at 15% 15%, #200040 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 85% 85%, #001530 0%, transparent 60%);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  min-height: 100vh;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 28px 16px 60px;
-  gap: 0;
+    radial-gradient(ellipse 70% 50% at 10% 0%, #2d0050 0%, transparent 55%),
+    radial-gradient(ellipse 60% 60% at 90% 100%, #001535 0%, transparent 55%);
+  color: var(--text); font-family: 'Nunito', sans-serif;
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; padding: 24px 16px 80px;
 }
+header { text-align:center; margin-bottom:8px; }
+.title {
+  font-family: 'Press Start 2P', monospace; font-size: 11px;
+  letter-spacing: 2px; margin-bottom: 6px;
+  background: linear-gradient(90deg, #f4bd4b, #a9330a, #c084fc, #f4bd4b);
+  background-size: 300%; -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+  animation: sh 4s linear infinite;
+}
+.subtitle { color: var(--dim); font-size: 14px; font-weight: 600; }
+@keyframes sh { to { background-position: 300%; } }
 
-header { text-align:center; margin-bottom: 22px; }
-header h1 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 13px;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-  background: linear-gradient(90deg, #fbc745, #b9390c, #fbc745);
-  background-size: 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 2.5s linear infinite;
+/* Tutorial */
+.tutorial-card {
+  background: linear-gradient(135deg, #2a1040, #1a2040);
+  border: 2px solid var(--accent); border-radius: 16px;
+  padding: 18px 22px; margin: 16px 0; max-width: 520px; width: 100%;
+  box-shadow: 0 0 30px #c084fc22;
 }
-header p { color: var(--dim); font-size: 13px; }
-@keyframes shimmer { to { background-position: 200%; } }
+.tutorial-card h3 {
+  font-family: 'Press Start 2P', monospace; font-size: 8px;
+  color: var(--accent); margin-bottom: 12px; letter-spacing: 1px;
+}
+.tut-steps { display: flex; flex-direction: column; gap: 9px; }
+.tut-step { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.6; }
+.tut-icon { font-size: 20px; flex-shrink: 0; }
+.tut-dismiss { margin-top: 14px; text-align: right; }
+.tut-dismiss button {
+  background: var(--accent); color: #1a0030; border: none;
+  padding: 8px 20px; border-radius: 20px; cursor: pointer;
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px;
+}
+.tut-dismiss button:hover { opacity: .85; }
 
-/* Toolbar */
-.toolbar {
-  display: flex; gap: 8px; margin-bottom: 18px;
-  align-items: center; flex-wrap: wrap; justify-content: center;
+/* Status */
+.statusbar {
+  display: flex; gap: 10px; align-items: center;
+  margin: 12px 0; flex-wrap: wrap; justify-content: center;
 }
-.btn {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px; padding: 9px 14px;
-  border: 2px solid var(--border); background: var(--panel);
-  color: var(--dim); cursor: pointer; border-radius: 6px;
-  transition: all .15s;
+.timer-badge {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 10px; padding: 7px 14px;
+  font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f4bd4b;
 }
-.btn:hover { border-color: #fbc745; color: #fbc745; box-shadow: 0 0 10px #fbc74530; }
-.timer { font-family:'Press Start 2P',monospace; font-size:9px; color:#fbc745; min-width:55px; }
-
-/* Progress */
-.prog-wrap { width:100%; max-width:600px; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
-.prog-bar { flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
-.prog-fill { height:100%; background:linear-gradient(90deg,#470302,#b9390c,#fbc745); border-radius:3px; transition:width .3s; box-shadow:0 0 8px #fbc74550; }
-.pct { font-family:'Press Start 2P',monospace; font-size:8px; color:#fbc745; min-width:45px; text-align:right; }
+.prog-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 10px; padding: 7px 14px; min-width: 180px;
+}
+.prog-bar { flex:1; height:8px; background:#3a2850; border-radius:4px; overflow:hidden; }
+.prog-fill {
+  height:100%; width:0%;
+  background: linear-gradient(90deg, #a9330a, #f4bd4b);
+  border-radius:4px; transition:width .4s cubic-bezier(.34,1.4,.64,1);
+  box-shadow: 0 0 8px #f4bd4b60;
+}
+.pct { font-weight: 800; font-size: 13px; color: #f4bd4b; min-width: 36px; }
 
 /* Color picker */
-.picker {
-  display:flex; gap:12px; align-items:center; margin-bottom:20px;
-  background: var(--panel); border: 2px solid var(--border);
-  padding: 10px 16px; border-radius: 12px; flex-wrap:wrap; justify-content:center;
+.picker-section {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 16px; padding: 14px 20px;
+  margin-bottom: 14px; max-width: 520px; width: 100%;
 }
-.picker-label { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--dim); }
-.color-swatch {
-  display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer;
-}
-.swatch-circle {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 3px solid transparent;
-  transition: all .15s; position: relative;
-}
-.color-swatch.active .swatch-circle {
-  border-color: white;
-  transform: scale(1.25);
-  box-shadow: 0 0 14px currentColor;
-}
-.swatch-label { font-size: 9px; color: var(--dim); font-weight: 700; white-space:nowrap; }
-.color-swatch.active .swatch-label { color: var(--text); }
-.eraser {
-  display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer;
-}
-.eraser-circle {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 3px solid var(--border); background: var(--panel);
+.picker-title { font-size: 11px; font-weight: 800; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.colors-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.color-opt { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: transform .15s; }
+.color-opt:hover { transform: translateY(-2px); }
+.color-circle {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 3px solid transparent; transition: all .15s;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; transition: all .15s;
 }
-.eraser.active .eraser-circle { border-color: white; transform: scale(1.25); }
-.eraser-label { font-size: 9px; color: var(--dim); font-weight: 700; }
-
-/* Keyboard hint */
-.kbd-hint { color: var(--dim); font-size: 11px; margin-bottom: 16px; }
-.kbd-hint kbd {
-  background: var(--border); border-radius: 3px;
-  padding: 1px 5px; font-size: 10px; font-family: monospace;
+.color-opt.active .color-circle { border-color: white; box-shadow: 0 0 0 3px rgba(255,255,255,.3), 0 0 18px currentColor; transform: scale(1.15); }
+.active-check { font-size: 18px; color: white; display: none; text-shadow: 0 1px 3px #0005; }
+.color-opt.active .active-check { display: block; }
+.color-name { font-size: 11px; font-weight: 700; color: var(--dim); white-space: nowrap; }
+.color-opt.active .color-name { color: var(--text); }
+.eraser-opt { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: transform .15s; }
+.eraser-opt:hover { transform: translateY(-2px); }
+.eraser-circle {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #2a1a3a; border: 3px dashed #3a2850;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; transition: all .15s;
 }
+.eraser-opt.active .eraser-circle { border-color: white; box-shadow: 0 0 0 3px rgba(255,255,255,.3); transform: scale(1.15); }
+.eraser-name { font-size: 11px; font-weight: 700; color: var(--dim); }
+.eraser-opt.active .eraser-name { color: var(--text); }
+.kbd-row { margin-top: 8px; font-size: 11px; color: var(--dim); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+kbd { background: #3a2850; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 11px; color: var(--text); border: 1px solid #5a4070; }
 
-/* Game table */
+/* Actions */
+.actions { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.action-btn {
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12px;
+  padding: 10px 16px; border-radius: 10px; cursor: pointer; border: 2px solid;
+  transition: all .15s; display: flex; align-items: center; gap: 6px;
+  position: relative;
+}
+.action-btn:hover { transform: translateY(-2px); }
+.action-btn .tip {
+  display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%); background: #2a1a3a; border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 12px; font-size: 11px; color: var(--text);
+  white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 4px 16px #00000060;
+  font-weight: 600;
+}
+.action-btn:hover .tip { display: block; }
+.btn-check { background: #0a3010; border-color: #2a8040; color: #5dff90; }
+.btn-check:hover { background: #0d4018; box-shadow: 0 4px 15px #2a804050; }
+.btn-hint { background: #302000; border-color: #906010; color: #f4bd4b; }
+.btn-hint:hover { background: #3d2b00; box-shadow: 0 4px 15px #90601050; }
+.btn-reveal { background: #20102a; border-color: #7030a0; color: #c084fc; }
+.btn-reveal:hover { background: #2a1535; }
+.btn-reset { background: #1a0808; border-color: #601010; color: #ff6b6b; }
+.btn-reset:hover { background: #220d0d; }
+
+/* Grid */
 .game-wrap { overflow: auto; max-width: 100%; }
 table { border-collapse: collapse; user-select: none; }
-
-.col-clue-td {
-  vertical-align: bottom; text-align: center;
-  width: var(--cs); min-width: var(--cs); padding-bottom: 4px;
-}
-.col-inner { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.col-clue-td { vertical-align: bottom; text-align: center; width: var(--cs); min-width: var(--cs); padding-bottom: 6px; }
+.col-inner { display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .cb {
-  font-size: 9px; font-weight: 800; font-family: 'DM Sans', sans-serif;
-  line-height: 1; padding: 2px 3px; border-radius: 3px;
-  min-width: 18px; text-align: center; color: #000;
+  font-size: 10px; font-weight: 900; font-family: 'Nunito', sans-serif;
+  line-height: 1; padding: 2px 4px; border-radius: 4px;
+  min-width: 20px; text-align: center; color: #fff;
+  text-shadow: 0 1px 2px #0007; transition: opacity .3s;
 }
-.cb.lit { opacity: 0.22; }
-
-.row-clue-td { text-align:right; padding-right: 6px; white-space:nowrap; vertical-align:middle; }
-.row-clue-td .cb { display:inline-block; margin-left:3px; }
-
-/* Grid cells */
+.cb.lit { opacity: 0.2; }
+.row-clue-td { text-align: right; padding-right: 8px; white-space: nowrap; vertical-align: middle; }
+.row-clue-td .cb { display: inline-block; margin-left: 3px; }
 td.cell {
   width: var(--cs); height: var(--cs); min-width: var(--cs);
-  border: 1px solid #1e1e38;
-  cursor: pointer; transition: filter .06s;
-  background: var(--panel);
+  border: 1px solid #2a1a40; cursor: crosshair;
+  transition: filter .06s, transform .06s;
+  background: var(--card); position: relative;
 }
-td.cell:hover { filter: brightness(1.4); }
-td.cell.b5r { border-right: 2.5px solid #3a3a6a; }
-td.cell.b5b { border-bottom: 2.5px solid #3a3a6a; }
-td.cell.wrong {
-  outline: 3px solid #ff1744;
-  z-index: 1; position: relative;
-  animation: shake .3s;
-}
+td.cell:hover { filter: brightness(1.5); transform: scale(1.05); z-index: 1; }
+td.cell.br { border-right: 2.5px solid #5a3a80; }
+td.cell.bb { border-bottom: 2.5px solid #5a3a80; }
+td.cell.wrong { outline: 3px solid #ff3366; animation: shake .4s; }
+td.cell.hinted { animation: hintPop .6s cubic-bezier(.34,1.8,.64,1); }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 60%{transform:translateX(5px)} }
+@keyframes hintPop { from{transform:scale(0.3);opacity:.4} to{transform:scale(1);opacity:1} }
 
-@keyframes shake {
-  0%,100%{ transform:translateX(0) }
-  25%{ transform:translateX(-4px) }
-  75%{ transform:translateX(4px) }
-}
+/* Legend */
+.legend { margin-top: 14px; font-size: 12px; color: var(--dim); display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.leg-dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
 
 /* Win */
-#winOverlay {
-  display:none; position:fixed; inset:0;
-  background: #07070fcc; backdrop-filter:blur(12px);
-  z-index:100; align-items:center; justify-content:center;
-}
-#winOverlay.show { display:flex; }
-.win-card {
-  background: var(--panel);
-  border: 2px solid #fbc745;
-  border-radius: 16px;
-  padding: 40px 52px;
-  text-align: center;
-  box-shadow: 0 0 80px #fbc74530;
-  animation: pop .55s cubic-bezier(.34,1.56,.64,1);
-  max-width: 380px;
-}
-.win-card h2 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 15px; color: #fbc745;
-  text-shadow: 0 0 20px #fbc745;
-  margin-bottom: 14px;
-}
-.win-card p { color: var(--dim); font-size: 14px; line-height: 2; margin-bottom: 20px; }
-#winCanvas {
-  image-rendering: pixelated;
-  width: 160px; height: 160px;
-  border: 2px solid #fbc745; border-radius: 6px;
-  display: block; margin: 0 auto 20px;
-  box-shadow: 0 0 24px #fbc74540;
-}
-.win-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 9px;
-  padding: 13px 26px; border: 2px solid #b9390c;
-  background: transparent; color: #b9390c; cursor: pointer;
-  border-radius: 8px; box-shadow: 0 0 12px #b9390c30;
-  transition: all .2s;
-}
-.win-btn:hover { background: #1a0500; }
-@keyframes pop { from{opacity:0;transform:scale(.4)} to{opacity:1;transform:scale(1)} }
+#win { display: none; position: fixed; inset: 0; background: #100a1ecc; backdrop-filter: blur(14px); z-index: 200; align-items: center; justify-content: center; }
+#win.show { display: flex; }
+.win-card { background: var(--card); border: 2px solid #f4bd4b; border-radius: 20px; padding: 40px 50px; text-align: center; box-shadow: 0 0 80px #f4bd4b30; animation: bigPop .6s cubic-bezier(.34,1.56,.64,1); }
+@keyframes bigPop { from{opacity:0;transform:scale(.3)} to{opacity:1;transform:scale(1)} }
+.win-card h2 { font-family: 'Press Start 2P', monospace; font-size: 14px; color: #f4bd4b; text-shadow: 0 0 20px #f4bd4b; margin-bottom: 10px; }
+.win-card p { color: var(--dim); font-size: 15px; line-height: 2.2; margin-bottom: 22px; }
+#winCanvas { image-rendering: pixelated; width: 150px; height: 150px; border: 3px solid #f4bd4b; border-radius: 8px; display: block; margin: 0 auto 20px; box-shadow: 0 0 30px #f4bd4b40; }
+.win-close { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px; padding: 13px 30px; border: 2px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; border-radius: 12px; transition: all .2s; }
+.win-close:hover { background: #1a0030; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>✦ İKBAL NONOGRAMı ✦</h1>
-  <p>Pixel art bulmacasını çöz, portreyi ortaya çıkar! 🎨</p>
+  <h1 class="title">✦ İKBAL'İN NONOGRAMI ✦</h1>
+  <p class="subtitle">Pixel sanat bulmacası — Kim saklı acaba? 🤔</p>
 </header>
 
-<div class="toolbar">
-  <button class="btn" onclick="checkSol()">✓ Kontrol Et</button>
-  <button class="btn" onclick="hint()">💡 İpucu</button>
-  <button class="btn" onclick="resetAll()">↺ Sıfırla</button>
-  <button class="btn" onclick="reveal()">👁 Cevabı Gör</button>
-  <span class="timer" id="timer">00:00</span>
+<div class="tutorial-card" id="tutorial">
+  <h3>🎮 NASIL OYNANIR?</h3>
+  <div class="tut-steps">
+    <div class="tut-step">
+      <span class="tut-icon">1️⃣</span>
+      <span>Aşağıdan bir <strong>renk seç</strong> (örn. Sarı 🟡). Aktif rengin üzerinde <strong>✓</strong> işareti çıkar.</span>
+    </div>
+    <div class="tut-step">
+      <span class="tut-icon">2️⃣</span>
+      <span>Satır ve sütunlardaki <strong>renkli sayılara</strong> bak. Her sayı, o rengin o çizgide kaç hücre <em>yan yana</em> olduğunu söyler.</span>
+    </div>
+    <div class="tut-step">
+      <span class="tut-icon">3️⃣</span>
+      <span>Hücrelere <strong>tıkla veya sürükle</strong> — seçili renge boyanır. Yanlış yere tıkladıysan <strong>Silgi</strong>'yi seç ve üstüne tıkla.</span>
+    </div>
+    <div class="tut-step">
+      <span class="tut-icon">💡</span>
+      <span>Takıldıysan <strong>"İpucu Al"</strong> butonuna bas, 3 hücre otomatik açılır. Tamamlayınca gizli portre ortaya çıkar! 🎉</span>
+    </div>
+    <div class="tut-step">
+      <span class="tut-icon">✅</span>
+      <span>Bir satır/sütun tamamen doğru dolduğunda ipuçları <strong>soluklaşır</strong> — doğru yoldasın demek!</span>
+    </div>
+  </div>
+  <div class="tut-dismiss">
+    <button onclick="document.getElementById('tutorial').style.display='none'">Anladım, başlayalım! →</button>
+  </div>
 </div>
 
-<div class="picker" id="picker">
-  <span class="picker-label">🎨 RENK:</span>
-  <div class="color-swatch active" id="sw0" onclick="pickColor(0)">
-    <div class="swatch-circle" style="background:#050101;color:#050101;"></div>
-    <span class="swatch-label">⬛ Siyah</span>
-  </div><div class="color-swatch" id="sw1" onclick="pickColor(1)">
-    <div class="swatch-circle" style="background:#fbc745;color:#fbc745;"></div>
-    <span class="swatch-label">🟡 Sarı</span>
-  </div><div class="color-swatch" id="sw2" onclick="pickColor(2)">
-    <div class="swatch-circle" style="background:#b9390c;color:#b9390c;"></div>
-    <span class="swatch-label">🟠 Turuncu</span>
-  </div><div class="color-swatch" id="sw3" onclick="pickColor(3)">
-    <div class="swatch-circle" style="background:#470302;color:#470302;"></div>
-    <span class="swatch-label">🟫 Koyu</span>
-  </div>
-  <div class="eraser" id="swE" onclick="pickColor(-1)">
-    <div class="eraser-circle">✕</div>
-    <span class="eraser-label">Sil</span>
+<div class="statusbar">
+  <div class="timer-badge">⏱ <span id="timer">00:00</span></div>
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+    <span class="pct" id="pct">0%</span>
   </div>
 </div>
 
-<p class="kbd-hint">💡 Klavye kısayolu: <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> renk seç, <kbd>E</kbd> sil</p>
+<div class="picker-section">
+  <div class="picker-title">🎨 Renk Seç — Tıkla veya klavye kısayolunu kullan</div>
+  <div class="colors-row">
+    <div class="color-opt active" id="sw0" onclick="pick(0)">
+      <div class="color-circle" style="background:#040101;color:#040101;"><span class="active-check">✓</span></div>
+      <span class="color-name">⬛ Siyah</span>
+    </div>
+    <div class="color-opt" id="sw1" onclick="pick(1)">
+      <div class="color-circle" style="background:#a9330a;color:#a9330a;"><span class="active-check">✓</span></div>
+      <span class="color-name">🟠 Turuncu</span>
+    </div>
+    <div class="color-opt" id="sw2" onclick="pick(2)">
+      <div class="color-circle" style="background:#f4bd4b;color:#f4bd4b;"><span class="active-check">✓</span></div>
+      <span class="color-name">🟡 Sarı</span>
+    </div>
+    <div class="color-opt" id="sw3" onclick="pick(3)">
+      <div class="color-circle" style="background:#4b0304;color:#4b0304;"><span class="active-check">✓</span></div>
+      <span class="color-name">🟫 Koyu</span>
+    </div>
+    <div class="eraser-opt" id="swE" onclick="pick(-1)">
+      <div class="eraser-circle">✕</div>
+      <span class="eraser-name">Silgi</span>
+    </div>
+  </div>
+  <div class="kbd-row">
+    ⌨️ <kbd>1</kbd> Siyah &nbsp;<kbd>2</kbd> Turuncu &nbsp;<kbd>3</kbd> Sarı &nbsp;<kbd>4</kbd> Koyu &nbsp;<kbd>E</kbd> Silgi
+  </div>
+</div>
 
-<div class="prog-wrap">
-  <div class="prog-bar"><div class="prog-fill" id="pf" style="width:0%"></div></div>
-  <span class="pct" id="pct">0%</span>
+<div class="actions">
+  <button class="action-btn btn-check" onclick="checkSol()">
+    ✓ Kontrol Et
+    <span class="tip">Yanlış hücreleri kırmızıyla işaretler</span>
+  </button>
+  <button class="action-btn btn-hint" onclick="hint()">
+    💡 İpucu Al
+    <span class="tip">3 hücreyi otomatik doldurur</span>
+  </button>
+  <button class="action-btn btn-reveal" onclick="reveal()">
+    👁 Cevabı Gör
+    <span class="tip">Tüm bulmacayı çözer</span>
+  </button>
+  <button class="action-btn btn-reset" onclick="resetAll()">
+    ↺ Sıfırla
+    <span class="tip">Her şeyi siler, başa döner</span>
+  </button>
 </div>
 
 <div class="game-wrap">
   <table id="tbl" oncontextmenu="return false;"></table>
 </div>
 
-<div id="winOverlay">
+<div class="legend">
+  <strong style="color:var(--dim)">Renkler:</strong>
+  <span class="legend-item"><span class="leg-dot" style="background:#040101"></span>Siyah</span>
+  <span class="legend-item"><span class="leg-dot" style="background:#a9330a"></span>Turuncu</span>
+  <span class="legend-item"><span class="leg-dot" style="background:#f4bd4b"></span>Sarı</span>
+  <span class="legend-item"><span class="leg-dot" style="background:#4b0304"></span>Koyu</span>
+  <span style="color:var(--dim);margin-left:4px">· Soluk ipucu = o satır/sütun tamamlandı ✓</span>
+</div>
+
+<div id="win">
   <div class="win-card">
-    <canvas id="winCanvas" width="20" height="20"></canvas>
+    <canvas id="winCanvas" width="15" height="15"></canvas>
     <h2>🎉 BRAVO!</h2>
-    <p>Bulmacayı çözdün!<br>İşte senin pixel portren 💜<br><span id="ftime" style="color:#fbc745"></span></p>
-    <button class="win-btn" onclick="document.getElementById('winOverlay').classList.remove('show')">Kapat ✕</button>
+    <p>Bulmacayı çözdün!<br>
+    <strong style="color:#f4bd4b">İşte saklanan portre 💜</strong><br>
+    <span id="ftime" style="color:#c084fc;font-size:13px"></span></p>
+    <button class="win-close" onclick="document.getElementById('win').classList.remove('show')">Kapat ✕</button>
   </div>
 </div>
 
 <script>
-const SOL = [[3, 0, 0, 0, 0, 2, 1, 1, 2, 2, 2, 3, 0, 2, 2, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 2, 2, 3, 0, 0, 0, 0], [3, 0, 0, 0, 3, 1, 1, 2, 2, 2, 2, 2, 1, 2, 2, 0, 0, 0, 0, 0], [3, 3, 0, 0, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 0, 3, 0, 0], [2, 3, 0, 2, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 3, 2, 3, 0], [2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 3, 3, 3, 0], [2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3], [2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 0, 3, 0, 3], [2, 3, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 3, 0, 0, 3], [2, 2, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0, 0, 3], [2, 2, 1, 2, 3, 0, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 0, 0, 3], [1, 1, 2, 3, 0, 0, 3, 2, 1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0], [1, 2, 2, 0, 0, 3, 3, 3, 3, 2, 1, 1, 2, 1, 1, 2, 0, 0, 0, 0], [1, 2, 3, 0, 0, 3, 3, 3, 3, 3, 0, 3, 2, 2, 2, 0, 0, 0, 0, 0], [1, 1, 3, 0, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [2, 1, 2, 0, 0, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 2, 0, 0, 3, 3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [2, 2, 2, 3, 2, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 2, 2, 2, 2, 2, 3, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 2, 2, 3, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0]];
-const PAL = ["#050101", "#fbc745", "#b9390c", "#470302"];
-const RCLUES = [[[3, 1], [0, 4], [2, 1], [1, 2], [2, 3], [3, 1], [0, 1], [2, 2], [0, 5]], [[0, 5], [1, 2], [2, 4], [3, 2], [2, 2], [3, 1], [0, 4]], [[3, 1], [0, 3], [3, 1], [1, 2], [2, 5], [1, 1], [2, 2], [0, 5]], [[3, 2], [0, 2], [1, 4], [2, 1], [1, 1], [2, 1], [1, 4], [2, 1], [0, 1], [3, 1], [0, 2]], [[2, 1], [3, 1], [0, 1], [2, 1], [1, 3], [2, 4], [1, 5], [3, 1], [2, 1], [3, 1], [0, 1]], [[2, 3], [1, 3], [2, 5], [1, 5], [3, 3], [0, 1]], [[2, 2], [1, 4], [2, 4], [1, 5], [2, 1], [3, 4]], [[2, 2], [1, 3], [2, 6], [1, 3], [2, 2], [0, 1], [3, 1], [0, 1], [3, 1]], [[2, 1], [3, 1], [1, 4], [2, 2], [1, 6], [2, 2], [3, 1], [0, 2], [3, 1]], [[2, 2], [1, 3], [2, 2], [1, 9], [3, 1], [0, 2], [3, 1]], [[2, 2], [1, 1], [2, 1], [3, 1], [0, 1], [2, 1], [1, 6], [2, 1], [1, 2], [2, 1], [0, 2], [3, 1]], [[1, 2], [2, 1], [3, 1], [0, 2], [3, 1], [2, 1], [1, 7], [2, 1], [0, 4]], [[1, 1], [2, 2], [0, 2], [3, 4], [2, 1], [1, 2], [2, 1], [1, 2], [2, 1], [0, 4]], [[1, 1], [2, 1], [3, 1], [0, 2], [3, 5], [0, 1], [3, 1], [2, 3], [0, 5]], [[1, 2], [3, 1], [0, 1], [3, 6], [0, 10]], [[2, 1], [1, 1], [2, 1], [0, 2], [3, 5], [0, 10]], [[1, 2], [2, 1], [0, 2], [3, 2], [0, 1], [3, 1], [0, 11]], [[2, 3], [3, 1], [2, 1], [3, 3], [0, 12]], [[1, 1], [2, 5], [3, 1], [0, 1], [3, 2], [0, 10]], [[1, 1], [2, 2], [3, 1], [2, 3], [0, 8], [3, 1], [0, 4]]];
-const CCLUES = [[[3, 1], [0, 1], [3, 2], [2, 7], [1, 4], [2, 1], [1, 1], [2, 1], [1, 2]], [[0, 3], [3, 2], [2, 3], [3, 1], [2, 2], [1, 1], [2, 2], [1, 3], [2, 3]], [[0, 5], [2, 1], [1, 5], [2, 2], [3, 2], [2, 5]], [[0, 4], [2, 1], [1, 5], [2, 1], [3, 1], [0, 5], [3, 1], [2, 1], [3, 1]], [[0, 2], [3, 1], [1, 7], [3, 1], [0, 3], [3, 1], [0, 2], [2, 3]], [[2, 1], [1, 6], [2, 1], [1, 1], [2, 1], [0, 2], [3, 6], [2, 2]], [[1, 5], [2, 6], [3, 8], [2, 1]], [[1, 1], [2, 2], [1, 1], [2, 5], [1, 2], [2, 1], [3, 4], [0, 1], [3, 1], [0, 2]], [[2, 8], [1, 4], [3, 5], [0, 1], [3, 1], [0, 1]], [[2, 3], [1, 1], [2, 4], [1, 4], [2, 1], [3, 3], [0, 2], [3, 1], [0, 1]], [[2, 6], [1, 1], [2, 1], [1, 5], [0, 7]], [[3, 2], [2, 1], [1, 10], [3, 1], [0, 6]], [[0, 1], [3, 1], [1, 10], [2, 2], [0, 6]], [[2, 3], [1, 7], [2, 1], [1, 2], [2, 1], [0, 6]], [[2, 3], [1, 4], [2, 2], [1, 4], [2, 1], [0, 6]], [[0, 1], [3, 1], [0, 1], [2, 1], [1, 2], [2, 3], [1, 2], [2, 2], [0, 6], [3, 1]], [[0, 4], [3, 3], [0, 1], [3, 2], [2, 1], [0, 9]], [[0, 3], [3, 1], [2, 1], [3, 3], [0, 12]], [[0, 4], [3, 3], [0, 13]], [[0, 6], [3, 5], [0, 9]]];
-const N = 20;
-const COLOR_NAMES = ["\u2b1b Siyah", "\ud83d\udfe1 Sar\u0131", "\ud83d\udfe0 Turuncu", "\ud83d\udfeb Koyu"];
+const SOL=[[0,0,0,0,2,2,1,1,3,3,1,0,0,0,0],[3,0,0,0,2,2,1,1,1,1,1,0,0,0,0],[3,0,0,1,2,2,1,1,2,2,2,3,0,0,0],[1,3,3,2,2,1,1,1,2,2,2,1,3,3,0],[1,1,2,2,2,1,1,1,2,2,2,1,3,3,0],[1,1,2,2,1,1,1,1,2,2,1,1,0,3,3],[1,3,2,2,1,1,2,2,2,2,2,1,0,0,1],[1,1,2,1,3,2,2,2,2,2,2,2,3,0,3],[1,2,1,0,0,1,2,2,2,1,2,1,0,0,0],[2,1,3,0,3,3,3,1,2,1,2,3,0,0,0],[2,2,0,0,3,3,3,0,0,3,3,0,0,0,0],[1,2,3,0,3,3,3,0,0,0,0,0,0,0,0],[2,1,3,0,3,3,0,0,0,0,0,0,0,0,0],[2,1,1,1,1,3,0,0,0,0,0,0,0,0,0],[2,1,3,1,1,3,0,0,0,0,0,0,0,0,0]];
+const PAL=["#040101","#a9330a","#f4bd4b","#4b0304"];
+const RCLUES=[[[0,4],[2,2],[1,2],[3,2],[1,1],[0,4]],[[3,1],[0,3],[2,2],[1,5],[0,4]],[[3,1],[0,2],[1,1],[2,2],[1,2],[2,3],[3,1],[0,3]],[[1,1],[3,2],[2,2],[1,3],[2,3],[1,1],[3,2],[0,1]],[[1,2],[2,3],[1,3],[2,3],[1,1],[3,2],[0,1]],[[1,2],[2,2],[1,4],[2,2],[1,2],[0,1],[3,2]],[[1,1],[3,1],[2,2],[1,2],[2,5],[1,1],[0,2],[1,1]],[[1,2],[2,1],[1,1],[3,1],[2,7],[3,1],[0,1],[3,1]],[[1,1],[2,1],[1,1],[0,2],[1,1],[2,3],[1,1],[2,1],[1,1],[0,3]],[[2,1],[1,1],[3,1],[0,1],[3,3],[1,1],[2,1],[1,1],[2,1],[3,1],[0,3]],[[2,2],[0,2],[3,3],[0,2],[3,2],[0,4]],[[1,1],[2,1],[3,1],[0,1],[3,3],[0,8]],[[2,1],[1,1],[3,1],[0,1],[3,2],[0,9]],[[2,1],[1,4],[3,1],[0,9]],[[2,1],[1,1],[3,1],[1,2],[3,1],[0,9]]];
+const CCLUES=[[[0,1],[3,2],[1,6],[2,2],[1,1],[2,3]],[[0,3],[3,1],[1,2],[3,1],[1,1],[2,1],[1,1],[2,2],[1,3]],[[0,3],[3,1],[2,4],[1,1],[3,1],[0,1],[3,2],[1,1],[3,1]],[[0,2],[1,1],[2,4],[1,1],[0,5],[1,2]],[[2,5],[1,2],[3,1],[0,1],[3,4],[1,2]],[[2,3],[1,4],[2,1],[1,1],[3,6]],[[1,6],[2,3],[3,3],[0,3]],[[1,6],[2,3],[1,1],[0,5]],[[3,1],[1,1],[2,8],[0,5]],[[3,1],[1,1],[2,6],[1,2],[3,1],[0,4]],[[1,2],[2,3],[1,1],[2,4],[3,1],[0,4]],[[0,2],[3,1],[1,4],[2,1],[1,1],[3,1],[0,5]],[[0,3],[3,2],[0,2],[3,1],[0,7]],[[0,3],[3,3],[0,9]],[[0,5],[3,1],[1,1],[3,1],[0,7]]];
+const N=15;
+let user=Array.from({length:N},()=>Array(N).fill(-1));
+let sel=0,drag=false,dragVal=-1,t0=Date.now(),tiv;
 
-let user = Array.from({length:N}, ()=>Array(N).fill(-1));
-let sel = 0, drag = false, dragVal = -1;
-let t0 = Date.now(), tiv;
-
-function pickColor(i) {
-  sel = i;
-  for(let k=0;k<PAL.length;k++) document.getElementById('sw'+k).classList.toggle('active', k===i);
-  document.getElementById('swE').classList.toggle('active', i===-1);
+function pick(i){
+  sel=i;
+  for(let k=0;k<PAL.length;k++) document.getElementById('sw'+k).classList.toggle('active',k===i);
+  document.getElementById('swE').classList.toggle('active',i===-1);
 }
 
-document.addEventListener('keydown', e=>{
-  const k = e.key;
-  if(k>='1'&&k<='4') pickColor(+k-1);
-  else if(k==='e'||k==='E') pickColor(-1);
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey) return;
+  if(e.key==='1') pick(0); else if(e.key==='2') pick(1);
+  else if(e.key==='3') pick(2); else if(e.key==='4') pick(3);
+  else if(e.key==='e'||e.key==='E') pick(-1);
 });
 
-function build() {
-  const tbl = document.getElementById('tbl');
-  const maxC = Math.max(...CCLUES.map(c=>c.length));
-
-  // Col clue rows
-  for(let ci=0; ci<maxC; ci++) {
-    const tr = document.createElement('tr');
-    const corner = document.createElement('td'); corner.className='row-clue-td'; tr.appendChild(corner);
-    for(let c=0;c<N;c++) {
-      const td = document.createElement('td'); td.className='col-clue-td';
-      const inner = document.createElement('div'); inner.className='col-inner';
-      const clues = CCLUES[c], off = maxC - clues.length;
-      if(ci >= off) {
-        const [ci2, cnt] = clues[ci-off];
-        const sp = document.createElement('span');
+function build(){
+  const tbl=document.getElementById('tbl');
+  const maxC=Math.max(...CCLUES.map(c=>c.length));
+  for(let ci=0;ci<maxC;ci++){
+    const tr=document.createElement('tr');
+    const corner=document.createElement('td'); corner.className='row-clue-td'; tr.appendChild(corner);
+    for(let c=0;c<N;c++){
+      const td=document.createElement('td'); td.className='col-clue-td';
+      const inner=document.createElement('div'); inner.className='col-inner';
+      const clues=CCLUES[c],off=maxC-clues.length;
+      if(ci>=off){
+        const [ci2,cnt]=clues[ci-off];
+        const sp=document.createElement('span');
         sp.className='cb'; sp.id=`cc${c}_${ci-off}`;
-        sp.style.background = PAL[ci2];
-        sp.textContent = cnt;
+        sp.style.background=PAL[ci2]; sp.textContent=cnt;
         inner.appendChild(sp);
       }
       td.appendChild(inner); tr.appendChild(td);
     }
     tbl.appendChild(tr);
   }
-
-  // Grid rows
-  for(let r=0;r<N;r++) {
-    const tr = document.createElement('tr');
-    const rc = document.createElement('td'); rc.className='row-clue-td'; rc.id='rc'+r;
+  for(let r=0;r<N;r++){
+    const tr=document.createElement('tr');
+    const rc=document.createElement('td'); rc.className='row-clue-td'; rc.id='rc'+r;
     RCLUES[r].forEach(([ci,cnt],i)=>{
       const sp=document.createElement('span'); sp.className='cb';
       sp.id=`rc${r}_${i}`; sp.style.background=PAL[ci]; sp.textContent=cnt;
       rc.appendChild(sp);
     });
     tr.appendChild(rc);
-
-    for(let c=0;c<N;c++) {
-      const td = document.createElement('td');
-      td.className = 'cell' + (c%5===4&&c<N-1?' b5r':'') + (r%5===4&&r<N-1?' b5b':'');
+    for(let c=0;c<N;c++){
+      const td=document.createElement('td');
+      td.className='cell'+(c%5===4&&c<N-1?' br':'')+(r%5===4&&r<N-1?' bb':'');
       td.id=`c${r}_${c}`; td.dataset.r=r; td.dataset.c=c;
-      td.onmousedown = e=>{ e.preventDefault(); drag=true; dragVal=(user[r][c]===sel?-1:sel); paint(r,c,dragVal); };
-      td.onmouseenter = ()=>{ if(drag) paint(r,c,dragVal); };
-      td.ontouchstart = e=>{ e.preventDefault(); drag=true; dragVal=(user[r][c]===sel?-1:sel); paint(r,c,dragVal); };
-      td.ontouchmove = e=>{
+      td.onmousedown=e=>{e.preventDefault();drag=true;dragVal=(user[r][c]===sel?-1:sel);paint(r,c,dragVal);};
+      td.onmouseenter=()=>{if(drag)paint(r,c,dragVal);};
+      td.ontouchstart=e=>{e.preventDefault();drag=true;dragVal=(user[r][c]===sel?-1:sel);paint(r,c,dragVal);};
+      td.ontouchmove=e=>{
         e.preventDefault();
-        const t=e.touches[0], el=document.elementFromPoint(t.clientX,t.clientY);
-        if(el&&el.dataset.r) paint(+el.dataset.r,+el.dataset.c,dragVal);
+        const t=e.touches[0],el=document.elementFromPoint(t.clientX,t.clientY);
+        if(el&&el.dataset.r!==undefined)paint(+el.dataset.r,+el.dataset.c,dragVal);
       };
       tr.appendChild(td);
     }
@@ -326,69 +371,68 @@ function build() {
   document.ontouchend=()=>drag=false;
 }
 
-function paint(r,c,v) {
+function paint(r,c,v,isHint=false){
   user[r][c]=v;
   const td=document.getElementById(`c${r}_${c}`);
-  td.style.background = v===-1 ? 'var(--panel)' : PAL[v];
+  td.style.background=v===-1?'':PAL[v];
   td.classList.remove('wrong');
+  if(isHint){td.classList.remove('hinted');void td.offsetWidth;td.classList.add('hinted');}
   updateProg();
-  checkLine(r,c);
+  checkLines(r,c);
 }
 
-function updateProg() {
+function updateProg(){
   let ok=0;
   for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(user[r][c]===SOL[r][c]) ok++;
   const p=Math.round(ok/N/N*100);
   document.getElementById('pf').style.width=p+'%';
   document.getElementById('pct').textContent=p+'%';
+  if(ok===N*N) setTimeout(winGame,400);
 }
 
-function checkLine(r,c) {
-  const rowOk = SOL[r].every((v,ci)=>user[r][ci]===v);
-  RCLUES[r].forEach((_,i)=>{ const el=document.getElementById(`rc${r}_${i}`); if(el) el.classList.toggle('lit',rowOk); });
-  const colOk = Array.from({length:N},(_,rr)=>user[rr][c]).every((v,rr)=>v===SOL[rr][c]);
-  CCLUES[c].forEach((_,i)=>{ const el=document.getElementById(`cc${c}_${i}`); if(el) el.classList.toggle('lit',colOk); });
+function checkLines(r,c){
+  const rowOk=SOL[r].every((_,ci)=>user[r][ci]===SOL[r][ci]);
+  RCLUES[r].forEach((_,i)=>{const el=document.getElementById(`rc${r}_${i}`);if(el)el.classList.toggle('lit',rowOk);});
+  const colOk=Array.from({length:N},(_,rr)=>user[rr][c]).every((v,rr)=>v===SOL[rr][c]);
+  CCLUES[c].forEach((_,i)=>{const el=document.getElementById(`cc${c}_${i}`);if(el)el.classList.toggle('lit',colOk);});
 }
 
-function checkSol() {
+function checkSol(){
   let bad=false;
-  for(let r=0;r<N;r++) for(let c=0;c<N;c++) {
-    if(user[r][c]!==SOL[r][c]) { document.getElementById(`c${r}_${c}`).classList.add('wrong'); bad=true; }
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    if(user[r][c]!==SOL[r][c]){document.getElementById(`c${r}_${c}`).classList.add('wrong');bad=true;}
   }
   if(!bad) winGame();
-  else setTimeout(()=>document.querySelectorAll('.wrong').forEach(e=>e.classList.remove('wrong')),1800);
+  else setTimeout(()=>document.querySelectorAll('.wrong').forEach(e=>e.classList.remove('wrong')),2000);
 }
 
-function hint() {
+function hint(){
   const wrong=[];
   for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(user[r][c]!==SOL[r][c]) wrong.push([r,c]);
   if(!wrong.length) return;
-  // Give 3 hints at once for easier experience
-  const picks = wrong.sort(()=>Math.random()-.5).slice(0,3);
-  picks.forEach(([r,c])=>{
-    paint(r,c,SOL[r][c]);
-    const td=document.getElementById(`c${r}_${c}`);
-    td.style.outline='3px solid white';
-    setTimeout(()=>td.style.outline='',1200);
-  });
+  wrong.sort(()=>Math.random()-.5).slice(0,3).forEach(([r,c])=>paint(r,c,SOL[r][c],true));
 }
 
-function reveal() {
+function reveal(){
   for(let r=0;r<N;r++) for(let c=0;c<N;c++) paint(r,c,SOL[r][c]);
 }
 
-function resetAll() {
-  for(let r=0;r<N;r++) for(let c=0;c<N;c++) paint(r,c,-1);
+function resetAll(){
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    user[r][c]=-1;
+    const td=document.getElementById(`c${r}_${c}`);
+    td.style.background=''; td.classList.remove('wrong','hinted');
+  }
   document.querySelectorAll('.cb').forEach(e=>e.classList.remove('lit'));
-  t0=Date.now();
+  updateProg(); t0=Date.now();
 }
 
-function winGame() {
+function winGame(){
   clearInterval(tiv);
-  const cv=document.getElementById('winCanvas'), ctx=cv.getContext('2d');
-  for(let r=0;r<N;r++) for(let c=0;c<N;c++) { ctx.fillStyle=PAL[SOL[r][c]]; ctx.fillRect(c,r,1,1); }
-  document.getElementById('ftime').textContent='⏱ '+document.getElementById('timer').textContent;
-  document.getElementById('winOverlay').classList.add('show');
+  const cv=document.getElementById('winCanvas'),ctx=cv.getContext('2d');
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){ctx.fillStyle=PAL[SOL[r][c]];ctx.fillRect(c,r,1,1);}
+  document.getElementById('ftime').textContent='⏱ '+document.getElementById('timer').textContent+' sürdü!';
+  document.getElementById('win').classList.add('show');
 }
 
 tiv=setInterval(()=>{
