@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSTI Mind Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0b0916;--blue:#5b8dee;--green:#4ecb71;--orange:#f7875f;
+    --red:#e84e6a;--purple:#a78bfa;--text:#eeeaff;--muted:rgba(255,255,255,0.35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);font-family:'Quicksand',sans-serif;color:var(--text);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 60px;}
+  body::before{content:'';position:fixed;top:-20%;left:-10%;width:60%;height:60%;pointer-events:none;
+    background:radial-gradient(ellipse,rgba(91,141,238,0.08) 0%,transparent 70%);}
+  h1{font-size:1.6rem;font-weight:700;margin-bottom:6px;
+    background:linear-gradient(135deg,#a78bfa,#5b8dee,#4ecb71);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .subtitle{font-size:.78rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:24px;}
+
+  /* MAP wrapper — takes most of screen */
+  .map-wrap{position:relative;width:100%;max-width:1200px;}
+  svg#map{width:100%;height:auto;display:block;}
+
+  /* Info overlay at bottom of map */
+  .info-bar{
+    position:relative;width:100%;max-width:1200px;
+    margin-top:16px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:16px;padding:18px 24px;
+    backdrop-filter:blur(12px);
+    display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+  }
+  .info-payload{
+    flex:1;min-width:200px;
+    font-family:'Fira Code',monospace;font-size:1rem;font-weight:700;color:var(--blue);
+  }
+  .info-expected{
+    flex:2;min-width:200px;
+    font-size:.83rem;color:rgba(255,255,255,0.65);line-height:1.5;
+  }
+  .info-expected strong{color:var(--green);}
+  .info-bar.hidden{display:none;}
+
+  /* Result bar */
+  .result-bar{
+    position:relative;width:100%;max-width:1200px;
+    margin-top:16px;border-radius:16px;padding:20px 28px;
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    animation:popIn .4s ease;
+  }
+  .result-bar.found  {background:rgba(167,139,250,0.12);border:1.5px solid var(--purple);}
+  .result-bar.safe   {background:rgba(232,78,106,0.12); border:1.5px solid var(--red);}
+  .result-bar.unknown{background:rgba(247,135,95,0.12); border:1.5px solid var(--orange);}
+  .result-bar .ri{font-size:2.2rem;}
+  .result-bar .rtext{flex:1;}
+  .result-bar .rt{font-size:1.1rem;font-weight:700;}
+  .result-bar .rd{font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.5;}
+  .result-bar.hidden{display:none;}
+
+  .btn-reset{
+    padding:9px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.05);color:var(--muted);cursor:pointer;
+    font-family:'Quicksand',sans-serif;font-weight:600;font-size:.85rem;transition:all .2s;
+    white-space:nowrap;
+  }
+  .btn-reset:hover{border-color:var(--blue);color:var(--blue);}
+  .btn-reset.hidden{display:none;}
+
+  /* Input screen */
+  .start-screen{
+    width:100%;max-width:460px;text-align:center;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;padding:32px 28px;margin-top:16px;backdrop-filter:blur(12px);
+  }
+  .start-screen p{font-size:.85rem;color:var(--muted);margin-bottom:16px;}
+  .start-screen input{
+    width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px;padding:11px 15px;color:var(--text);
+    font-family:'Fira Code',monospace;font-size:.9rem;outline:none;margin-bottom:12px;
+  }
+  .start-screen input:focus{border-color:var(--blue);}
+  .btn-go{
+    width:100%;padding:12px;border-radius:10px;border:none;cursor:pointer;
+    font-family:'Quicksand',sans-serif;font-weight:700;font-size:1rem;
+    background:linear-gradient(135deg,#5b8dee,#a78bfa);color:#fff;transition:opacity .2s;
+  }
+  .btn-go:hover{opacity:.85;}
+
+  @keyframes popIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+  .pulse-ring{animation:pulse 1.6s ease-in-out infinite;}
+</style>
+</head>
+<body>
+
+<h1>SSTI Detection Mind Map ♥</h1>
+<p class="subtitle">// Zihin haritasi uzerinde ilerle — Ikbal icin</p>
+
+<!-- START SCREEN -->
+<div class="start-screen" id="start-screen">
+  <p>Test etmek istedigin endpoint veya parametreyi gir:</p>
+  <input type="text" id="target-input" placeholder="ornek: search?q=..." value="search?q="/>
+  <button class="btn-go" onclick="startFlow()">Testi Basla</button>
+</div>
+
+<!-- MAP (hidden until start) -->
+<div class="map-wrap hidden" id="map-wrap">
+  <svg id="map" viewBox="0 0 1100 620" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glow-active" x="-40%" y="-40%" width="180%" height="180%">
+        <feGaussianBlur stdDeviation="6" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="glow-done" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <marker id="arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4ecb71"/></marker>
+      <marker id="arr-r" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e84e6a"/></marker>
+      <marker id="arr-g-dim" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4ecb71"/></marker>
+      <marker id="arr-r-dim" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e84e6a"/></marker>
+    </defs>
+
+    <!-- ═══════════════════════════
+         EDGES (drawn behind nodes)
+    ═══════════════════════════ -->
+
+    <!-- root → b1 (yes, up) -->
+    <path id="edge-root-b1" d="M185,290 C220,220 260,195 305,182" stroke="#4ecb71" stroke-width="2.5" fill="none" marker-end="url(#arr-g)" opacity="0.18"/>
+    <!-- YES button on this edge -->
+    <g id="ebtn-root-b1" class="edge-btn" onclick="answer('b1')" style="cursor:pointer">
+      <rect x="195" y="220" width="44" height="22" rx="11" fill="#4ecb71" opacity="0.92"/>
+      <text x="217" y="235" font-family="Quicksand" font-size="11" font-weight="700" fill="#0b1a0e" text-anchor="middle">EVET</text>
+    </g>
+
+    <!-- root → b2 (no, down) -->
+    <path id="edge-root-b2" d="M185,310 C220,380 260,405 305,418" stroke="#e84e6a" stroke-width="2.5" fill="none" marker-end="url(#arr-r)" opacity="0.18"/>
+    <g id="ebtn-root-b2" class="edge-btn" onclick="answer('b2')" style="cursor:pointer">
+      <rect x="195" y="358" width="52" height="22" rx="11" fill="#e84e6a" opacity="0.92"/>
+      <text x="221" y="373" font-family="Quicksand" font-size="11" font-weight="700" fill="#1a0810" text-anchor="middle">HAYIR</text>
+    </g>
+
+    <!-- b1 → smarty (yes) -->
+    <path id="edge-b1-smarty" d="M475,168 C520,152 545,148 580,148" stroke="#4ecb71" stroke-width="2.5" fill="none" marker-end="url(#arr-g)" opacity="0.18"/>
+    <g id="ebtn-b1-smarty" class="edge-btn" onclick="answer('smarty')" style="cursor:pointer">
+      <rect x="498" y="138" width="44" height="22" rx="11" fill="#4ecb71" opacity="0.92"/>
+      <text x="520" y="153" font-family="Quicksand" font-size="11" font-weight="700" fill="#0b1a0e" text-anchor="middle">EVET</text>
+    </g>
+
+    <!-- b1 → zjoin (no) -->
+    <path id="edge-b1-zjoin" d="M475,175 C520,200 545,210 580,220" stroke="#e84e6a" stroke-width="2.5" fill="none" marker-end="url(#arr-r)" opacity="0.18"/>
+    <g id="ebtn-b1-zjoin" class="edge-btn" onclick="answer('zjoin')" style="cursor:pointer">
+      <rect x="496" y="198" width="52" height="22" rx="11" fill="#e84e6a" opacity="0.92"/>
+      <text x="522" y="213" font-family="Quicksand" font-size="11" font-weight="700" fill="#1a0810" text-anchor="middle">HAYIR</text>
+    </g>
+
+    <!-- zjoin → mako (yes) -->
+    <path id="edge-zjoin-mako" d="M782,212 C830,198 855,185 880,172" stroke="#4ecb71" stroke-width="2.5" fill="none" marker-end="url(#arr-g)" opacity="0.18"/>
+    <g id="ebtn-zjoin-mako" class="edge-btn" onclick="answer('mako')" style="cursor:pointer">
+      <rect x="802" y="180" width="44" height="22" rx="11" fill="#4ecb71" opacity="0.92"/>
+      <text x="824" y="195" font-family="Quicksand" font-size="11" font-weight="700" fill="#0b1a0e" text-anchor="middle">EVET</text>
+    </g>
+
+    <!-- zjoin → unknown1 (no) -->
+    <path id="edge-zjoin-unk1" d="M782,228 C830,248 855,258 880,268" stroke="#e84e6a" stroke-width="2.5" fill="none" marker-end="url(#arr-r)" opacity="0.18"/>
+    <g id="ebtn-zjoin-unk1" class="edge-btn" onclick="answer('unknown1')" style="cursor:pointer">
+      <rect x="800" y="248" width="52" height="22" rx="11" fill="#e84e6a" opacity="0.92"/>
+      <text x="826" y="263" font-family="Quicksand" font-size="11" font-weight="700" fill="#1a0810" text-anchor="middle">HAYIR</text>
+    </g>
+
+    <!-- b2 → sub77 (yes) -->
+    <path id="edge-b2-sub77" d="M475,418 C520,415 545,412 580,410" stroke="#4ecb71" stroke-width="2.5" fill="none" marker-end="url(#arr-g)" opacity="0.18"/>
+    <g id="ebtn-b2-sub77" class="edge-btn" onclick="answer('sub77')" style="cursor:pointer">
+      <rect x="498" y="400" width="44" height="22" rx="11" fill="#4ecb71" opacity="0.92"/>
+      <text x="520" y="415" font-family="Quicksand" font-size="11" font-weight="700" fill="#0b1a0e" text-anchor="middle">EVET</text>
+    </g>
+
+    <!-- b2 → notvuln (no) -->
+    <path id="edge-b2-notvuln" d="M475,432 C520,462 545,478 580,488" stroke="#e84e6a" stroke-width="2.5" fill="none" marker-end="url(#arr-r)" opacity="0.18"/>
+    <g id="ebtn-b2-notvuln" class="edge-btn" onclick="answer('notvuln')" style="cursor:pointer">
+      <rect x="492" y="462" width="52" height="22" rx="11" fill="#e84e6a" opacity="0.92"/>
+      <text x="518" y="477" font-family="Quicksand" font-size="11" font-weight="700" fill="#1a0810" text-anchor="middle">HAYIR</text>
+    </g>
+
+    <!-- sub77 → jinja2 (yes) -->
+    <path id="edge-sub77-jinja2" d="M782,398 C830,380 855,368 880,358" stroke="#4ecb71" stroke-width="2.5" fill="none" marker-end="url(#arr-g)" opacity="0.18"/>
+    <g id="ebtn-sub77-jinja2" class="edge-btn" onclick="answer('jinja2')" style="cursor:pointer">
+      <rect x="800" y="358" width="44" height="22" rx="11" fill="#4ecb71" opacity="0.92"/>
+      <text x="822" y="373" font-family="Quicksand" font-size="11" font-weight="700" fill="#0b1a0e" text-anchor="middle">EVET</text>
+    </g>
+
+    <!-- sub77 → twig (no) -->
+    <path id="edge-sub77-twig" d="M782,415 C830,432 855,445 880,455" stroke="#e84e6a" stroke-width="2.5" fill="none" marker-end="url(#arr-r)" opacity="0.18"/>
+    <g id="ebtn-sub77-twig" class="edge-btn" onclick="answer('twig')" style="cursor:pointer">
+      <rect x="800" y="438" width="52" height="22" rx="11" fill="#e84e6a" opacity="0.92"/>
+      <text x="826" y="453" font-family="Quicksand" font-size="11" font-weight="700" fill="#1a0810" text-anchor="middle">HAYIR</text>
+    </g>
+
+    <!-- ═══════════════════════════
+         NODES
+    ═══════════════════════════ -->
+
+    <!-- ROOT: ${7*7} -->
+    <g id="node-root">
+      <rect class="pulse-ring" rx="12" x="60" y="272" width="126" height="48" fill="none" stroke="#5b8dee" stroke-width="2" opacity="0.4"/>
+      <rect rx="12" x="62" y="274" width="122" height="44" fill="#1e3170" stroke="#5b8dee" stroke-width="2.5"/>
+      <text font-family="Fira Code" font-size="14" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="middle" x="123" y="296">${7*7}</text>
+    </g>
+
+    <!-- BRANCH 1: a{*comment*}b -->
+    <g id="node-b1">
+      <rect rx="12" x="305" y="155" width="170" height="44" fill="#162458" stroke="#5b8dee" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="11" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="390" y="177">a{*comment*}b</text>
+    </g>
+
+    <!-- BRANCH 2: {{7*7}} -->
+    <g id="node-b2">
+      <rect rx="12" x="305" y="400" width="170" height="44" fill="#162458" stroke="#5b8dee" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="13" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="390" y="422">{{7*7}}</text>
+    </g>
+
+    <!-- Smarty -->
+    <g id="node-smarty">
+      <rect rx="12" x="580" y="130" width="130" height="44" fill="#0d3320" stroke="#4ecb71" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="13" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="645" y="152">Smarty</text>
+    </g>
+
+    <!-- z.join -->
+    <g id="node-zjoin">
+      <rect rx="12" x="580" y="202" width="202" height="44" fill="#162458" stroke="#5b8dee" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="11" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="681" y="224">${"z".join("ab")}</text>
+    </g>
+
+    <!-- sub77 -->
+    <g id="node-sub77">
+      <rect rx="12" x="580" y="393" width="202" height="44" fill="#162458" stroke="#5b8dee" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="13" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="681" y="415">{{7*'7'}}</text>
+    </g>
+
+    <!-- Not vulnerable -->
+    <g id="node-notvuln">
+      <rect rx="12" x="580" y="470" width="160" height="44" fill="#3d0a18" stroke="#e84e6a" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="11" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="660" y="492">Not vulnerable</text>
+    </g>
+
+    <!-- Mako -->
+    <g id="node-mako">
+      <rect rx="12" x="880" y="152" width="130" height="44" fill="#0d3320" stroke="#4ecb71" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="13" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="945" y="174">Mako</text>
+    </g>
+
+    <!-- Unknown 1 -->
+    <g id="node-unknown1">
+      <rect rx="12" x="880" y="252" width="130" height="44" fill="#3d2010" stroke="#f7875f" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="12" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="945" y="274">Unknown</text>
+    </g>
+
+    <!-- Jinja2 -->
+    <g id="node-jinja2">
+      <rect rx="12" x="880" y="338" width="130" height="44" fill="#261550" stroke="#a78bfa" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="13" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="945" y="360">Jinja2</text>
+    </g>
+
+    <!-- Twig -->
+    <g id="node-twig">
+      <rect rx="12" x="880" y="436" width="130" height="44" fill="#261550" stroke="#a78bfa" stroke-width="2" opacity="0.4"/>
+      <text font-family="Fira Code" font-size="13" font-weight="700" fill="rgba(255,255,255,0.4)" text-anchor="middle" dominant-baseline="middle" x="945" y="458">Twig</text>
+    </g>
+
+    <!-- Edge btn group overlays — must be on top -->
+  </svg>
+</div>
+
+<!-- INFO BAR -->
+<div class="info-bar hidden" id="info-bar">
+  <div class="info-payload" id="info-payload"></div>
+  <div class="info-expected" id="info-expected"></div>
+</div>
+
+<!-- RESULT BAR -->
+<div class="result-bar hidden" id="result-bar">
+  <div class="ri" id="res-icon"></div>
+  <div class="rtext">
+    <div class="rt" id="res-title"></div>
+    <div class="rd" id="res-desc"></div>
+  </div>
+  <button class="btn-reset" onclick="resetFlow()">Yeniden Basla</button>
+</div>
+
+<button class="btn-reset hidden" id="reset-top" onclick="resetFlow()" style="margin-top:12px;">Sifirla</button>
+
+<script>
+const NODES = {
+  root: {
+    payload:'${7*7}',
+    expected:'49',
+    hint:'Template engine ifadeyi hesapliyorsa ciktida <strong>49</strong> gorursun.',
+    yes:'b1', no:'b2'
+  },
+  b1: {
+    payload:'a{*comment*}b',
+    expected:'ab',
+    hint:'Smarty bu blogu yorum olarak siler. Ciktida sadece <strong>ab</strong> kaliyorsa EVET.',
+    yes:'smarty', no:'zjoin'
+  },
+  zjoin: {
+    payload:'${"z".join("ab")}',
+    expected:'azb',
+    hint:'Python tabanlı engine calistirirsa sonuc <strong>azb</strong> olur.',
+    yes:'mako', no:'unknown1'
+  },
+  b2: {
+    payload:'{{7*7}}',
+    expected:'49',
+    hint:'Jinja2/Twig tipi. Cevap <strong>49</strong> ise EVET, hic degismemisse HAYIR.',
+    yes:'sub77', no:'notvuln'
+  },
+  sub77: {
+    payload:"{{7*'7'}}",
+    expected:"7777777 (Jinja2) ya da 49 (Twig)",
+    hint:'<strong>7777777</strong> → Jinja2 (EVET). <strong>49</strong> → Twig (HAYIR).',
+    yes:'jinja2', no:'twig'
+  },
+  // terminals
+  smarty:   {terminal:true, type:'found',   engine:'Smarty',       color:'#4ecb71', icon:'🟢', msg:'Smarty engine tespit edildi. {php} taglari veya getStreamVariable ile RCE denenebilir.'},
+  mako:     {terminal:true, type:'found',   engine:'Mako',         color:'#4ecb71', icon:'🟢', msg:'Mako (Python) engine. ${__import__("os").popen("id").read()} ile RCE mumkun.'},
+  jinja2:   {terminal:true, type:'found',   engine:'Jinja2',       color:'#a78bfa', icon:'🟣', msg:'Jinja2 tespit edildi! Flask/Django. {{config}} veya MRO chain ile RCE denenebilir.'},
+  twig:     {terminal:true, type:'found',   engine:'Twig',         color:'#a78bfa', icon:'🟣', msg:'Twig (PHP) engine. {{_self.env.registerUndefinedFilterCallback}} ile RCE denenebilir.'},
+  notvuln:  {terminal:true, type:'safe',    engine:'Not Vulnerable',color:'#e84e6a', icon:'🔴', msg:'Girdi sanitize ediliyor ya da engine e iletilmiyor. Farkli parametreler veya context dene.'},
+  unknown1: {terminal:true, type:'unknown', engine:'Unknown Engine',color:'#f7875f', icon:'🟠', msg:'Bilinmeyen engine. Freemarker (#set), Velocity, Pebble veya Java tabanli olabilir.'}
+};
+
+// SVG node element id
+const NODE_EL = {
+  root:'node-root', b1:'node-b1', b2:'node-b2', zjoin:'node-zjoin',
+  sub77:'node-sub77', smarty:'node-smarty', mako:'node-mako',
+  jinja2:'node-jinja2', twig:'node-twig', notvuln:'node-notvuln', unknown1:'node-unknown1'
+};
+
+// Edge element ids: [path, button-group]
+const EDGE_EL = {
+  'root:b1':   ['edge-root-b1',   'ebtn-root-b1'],
+  'root:b2':   ['edge-root-b2',   'ebtn-root-b2'],
+  'b1:smarty': ['edge-b1-smarty', 'ebtn-b1-smarty'],
+  'b1:zjoin':  ['edge-b1-zjoin',  'ebtn-b1-zjoin'],
+  'zjoin:mako':['edge-zjoin-mako','ebtn-zjoin-mako'],
+  'zjoin:unknown1':['edge-zjoin-unk1','ebtn-zjoin-unk1'],
+  'b2:sub77':  ['edge-b2-sub77',  'ebtn-b2-sub77'],
+  'b2:notvuln':['edge-b2-notvuln','ebtn-b2-notvuln'],
+  'sub77:jinja2':['edge-sub77-jinja2','ebtn-sub77-jinja2'],
+  'sub77:twig':['edge-sub77-twig','ebtn-sub77-twig']
+};
+
+// Which edges belong to which source node
+const NODE_EDGES = {
+  root: ['root:b1','root:b2'],
+  b1:   ['b1:smarty','b1:zjoin'],
+  zjoin:['zjoin:mako','zjoin:unknown1'],
+  b2:   ['b2:sub77','b2:notvuln'],
+  sub77:['sub77:jinja2','sub77:twig']
+};
+
+let current = null;
+let visited = [];
+
+function startFlow() {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('map-wrap').classList.remove('hidden');
+  document.getElementById('reset-top').classList.remove('hidden');
+  current = 'root';
+  visited = [];
+  updateMap();
+  showInfo('root');
+}
+
+function answer(nextId) {
+  if (!current || NODES[current].terminal) return;
+  const node = NODES[current];
+  // only valid answers
+  if (nextId !== node.yes && nextId !== node.no) return;
+
+  // activate edge
+  const edgeKey = current + ':' + nextId;
+  if (EDGE_EL[edgeKey]) {
+    const ep = document.getElementById(EDGE_EL[edgeKey][0]);
+    if (ep) { ep.style.opacity = '1'; ep.style.strokeWidth = '4'; }
+  }
+
+  visited.push(current);
+  current = nextId;
+
+  if (NODES[nextId].terminal) {
+    updateMap();
+    showResult(NODES[nextId]);
+  } else {
+    updateMap();
+    showInfo(nextId);
+  }
+}
+
+function updateMap() {
+  // dim everything
+  Object.keys(NODE_EL).forEach(nid => {
+    const el = document.getElementById(NODE_EL[nid]);
+    if (!el) return;
+    const rect = el.querySelector('rect:last-of-type') || el.querySelector('rect');
+    if (rect) { rect.style.opacity = '0.22'; rect.style.filter = ''; rect.style.strokeWidth = '1.5'; }
+    const txt = el.querySelector('text');
+    if (txt) txt.style.opacity = '0.22';
+    // remove pulse from all
+    const pr = el.querySelector('.pulse-ring');
+    if (pr) pr.style.display = 'none';
+  });
+  Object.keys(EDGE_EL).forEach(ek => {
+    const [pid, bid] = EDGE_EL[ek];
+    const ep = document.getElementById(pid);
+    if (ep && !isEdgeOnPath(ek)) { ep.style.opacity = '0.08'; }
+    const eb = document.getElementById(bid);
+    if (eb) eb.style.display = 'none';
+  });
+
+  // visited nodes
+  visited.forEach(nid => {
+    const el = document.getElementById(NODE_EL[nid]);
+    if (!el) return;
+    const rect = el.querySelector('rect:last-of-type') || el.querySelector('rect');
+    if (rect) { rect.style.opacity = '0.6'; rect.style.strokeWidth = '2'; }
+    const txt = el.querySelector('text');
+    if (txt) txt.style.opacity = '0.6';
+  });
+
+  // active node
+  if (current && NODE_EL[current]) {
+    const el = document.getElementById(NODE_EL[current]);
+    if (el) {
+      const rects = el.querySelectorAll('rect');
+      rects.forEach(r => {
+        r.style.opacity = '1';
+        r.style.strokeWidth = '3';
+        r.style.filter = 'url(#glow-active)';
+      });
+      const txt = el.querySelector('text');
+      if (txt) txt.style.opacity = '1';
+    }
+
+    // show edge buttons for current
+    if (NODE_EDGES[current]) {
+      NODE_EDGES[current].forEach(ek => {
+        const [pid, bid] = EDGE_EL[ek];
+        const ep = document.getElementById(pid);
+        if (ep) ep.style.opacity = '0.9';
+        const eb = document.getElementById(bid);
+        if (eb) eb.style.display = 'block';
+      });
+    }
+  }
+}
+
+function isEdgeOnPath(edgeKey) {
+  // check if edge was traversed
+  for (let i = 0; i < visited.length - 1; i++) {
+    if (edgeKey === visited[i]+':'+visited[i+1]) return true;
+  }
+  if (visited.length > 0 && current) {
+    const last = visited[visited.length-1];
+    if (edgeKey === last+':'+current) return true;
+  }
+  return false;
+}
+
+function showInfo(nid) {
+  const node = NODES[nid];
+  document.getElementById('info-payload').textContent = node.payload;
+  document.getElementById('info-expected').innerHTML = 
+    '<strong style="color:#a78bfa">Beklenen:</strong> ' + node.expected + 
+    ' &nbsp;|&nbsp; ' + node.hint;
+  document.getElementById('info-bar').classList.remove('hidden');
+  document.getElementById('result-bar').classList.add('hidden');
+}
+
+function showResult(node) {
+  document.getElementById('info-bar').classList.add('hidden');
+  const rb = document.getElementById('result-bar');
+  rb.className = 'result-bar ' + node.type;
+  document.getElementById('res-icon').textContent = node.icon;
+  document.getElementById('res-title').textContent = node.engine;
+  document.getElementById('res-title').style.color = node.color;
+  document.getElementById('res-desc').textContent = node.msg;
+  rb.classList.remove('hidden');
+}
+
+function resetFlow() {
+  current = null; visited = [];
+  document.getElementById('start-screen').classList.remove('hidden');
+  document.getElementById('map-wrap').classList.add('hidden');
+  document.getElementById('info-bar').classList.add('hidden');
+  document.getElementById('result-bar').classList.add('hidden');
+  document.getElementById('reset-top').classList.add('hidden');
+  // reset all svg
+  Object.keys(NODE_EL).forEach(nid => {
+    const el = document.getElementById(NODE_EL[nid]);
+    if (!el) return;
+    el.querySelectorAll('rect').forEach(r => {
+      r.style.opacity=''; r.style.filter=''; r.style.strokeWidth='';
+    });
+    const txt = el.querySelector('text');
+    if (txt) txt.style.opacity='';
+    const pr = el.querySelector('.pulse-ring');
+    if (pr) pr.style.display='';
+  });
+  Object.keys(EDGE_EL).forEach(ek => {
+    const [pid, bid] = EDGE_EL[ek];
+    const ep = document.getElementById(pid);
+    if (ep) { ep.style.opacity='0.18'; ep.style.strokeWidth='2.5'; }
+    const eb = document.getElementById(bid);
+    if (eb) eb.style.display='none';
+  });
+}
+</script>
+</body>
+</html>
