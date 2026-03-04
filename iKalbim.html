@@ -2,58 +2,75 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🌸 Çiçek Nonogram Mayın Tarlası - ikbalicokseviyorum.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>🎮 Pixel Nonogram - ikbalicokseviyorum.com</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     body {
       min-height: 100vh;
+      min-height: -webkit-fill-available;
       background: linear-gradient(135deg, #831843 0%, #be185d 30%, #db2777 50%, #ec4899 70%, #f9a8d4 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 15px;
+      padding: 10px;
+      padding-bottom: 30px;
       color: white;
+      overflow-x: hidden;
     }
     
     h1 {
-      font-size: 1.6rem;
-      margin-bottom: 5px;
+      font-size: clamp(1.2rem, 5vw, 1.6rem);
+      margin-bottom: 4px;
       text-align: center;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
     .subtitle {
       color: #fce7f3;
-      font-size: 0.8rem;
-      margin-bottom: 12px;
+      font-size: clamp(0.65rem, 2.5vw, 0.8rem);
+      margin-bottom: 8px;
       font-style: italic;
+    }
+    
+    .current-art {
+      background: rgba(255,255,255,0.2);
+      padding: 5px 14px;
+      border-radius: 15px;
+      margin-bottom: 8px;
+      font-weight: bold;
+      font-size: clamp(0.9rem, 4vw, 1.1rem);
     }
     
     .stats {
       display: flex;
-      gap: 15px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     
     .stat-box {
       background: rgba(255,255,255,0.25);
       backdrop-filter: blur(10px);
-      padding: 10px 20px;
-      border-radius: 15px;
+      padding: 8px 14px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
       border: 2px solid rgba(255,255,255,0.3);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     
     .stat-box.lives {
@@ -64,23 +81,48 @@
       background: linear-gradient(135deg, rgba(168,85,247,0.4), rgba(192,132,252,0.4));
     }
     
+    .mode-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .mode-btn {
+      padding: 10px 18px;
+      border-radius: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-size: clamp(0.85rem, 3vw, 1rem);
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .mode-btn.active {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      border-color: #a855f7;
+      transform: scale(1.05);
+    }
+    
     .instructions {
-      font-size: 0.75rem;
+      font-size: clamp(0.65rem, 2.5vw, 0.75rem);
       color: #fce7f3;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       text-align: center;
       background: rgba(0,0,0,0.2);
-      padding: 8px 16px;
-      border-radius: 20px;
+      padding: 6px 12px;
+      border-radius: 12px;
+      max-width: 95%;
     }
     
     .message {
-      padding: 12px 25px;
-      border-radius: 15px;
-      margin-bottom: 12px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      margin-bottom: 8px;
       text-align: center;
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: clamp(0.9rem, 3.5vw, 1.1rem);
       animation: popIn 0.3s ease;
     }
     
@@ -93,35 +135,31 @@
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.3));
       border: 2px solid #34d399;
       color: #a7f3d0;
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
     }
     
     .message.lost {
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(248, 113, 113, 0.3));
       border: 2px solid #f87171;
       color: #fecaca;
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
     }
     
     .message.heal {
       background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(74, 222, 128, 0.3));
       border: 2px solid #4ade80;
       color: #bbf7d0;
-      font-size: 0.9rem;
-      padding: 8px 20px;
+      font-size: clamp(0.8rem, 3vw, 0.9rem);
+      padding: 6px 14px;
     }
     
     .game-container {
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 15px;
+      border-radius: 16px;
+      padding: 8px;
       border: 2px solid rgba(255,255,255,0.2);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    }
-    
-    .game-grid {
-      display: inline-block;
+      overflow: auto;
+      max-width: 98vw;
+      -webkit-overflow-scrolling: touch;
     }
     
     .row {
@@ -129,8 +167,9 @@
     }
     
     .hint-corner {
-      width: 55px;
-      height: 45px;
+      width: clamp(36px, 10vw, 50px);
+      height: clamp(32px, 9vw, 42px);
+      flex-shrink: 0;
     }
     
     .col-hints {
@@ -138,70 +177,67 @@
     }
     
     .col-hint {
-      width: 24px;
+      width: var(--cell-size);
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
       align-items: center;
-      font-size: 10px;
+      font-size: clamp(8px, 2vw, 10px);
       font-family: monospace;
       color: #fff;
       font-weight: bold;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      flex-shrink: 0;
     }
     
     .row-hints {
-      width: 55px;
+      width: clamp(36px, 10vw, 50px);
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      gap: 3px;
-      padding-right: 6px;
-      font-size: 10px;
+      gap: 2px;
+      padding-right: 4px;
+      font-size: clamp(8px, 2vw, 10px);
       font-family: monospace;
       color: #fff;
       font-weight: bold;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      flex-shrink: 0;
     }
     
     .cell {
-      width: 24px;
-      height: 24px;
+      width: var(--cell-size);
+      height: var(--cell-size);
       border: 1px solid rgba(255,255,255,0.3);
       background: linear-gradient(135deg, #9d174d, #be185d);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
-      transition: all 0.15s;
-      border-radius: 3px;
+      font-size: clamp(10px, 2.5vw, 14px);
+      transition: all 0.1s;
+      border-radius: 2px;
+      flex-shrink: 0;
+      user-select: none;
+      -webkit-user-select: none;
     }
     
-    .cell:hover {
-      background: linear-gradient(135deg, #be185d, #db2777);
-      transform: scale(1.1);
-      z-index: 10;
-      box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+    .cell:active {
+      transform: scale(0.9);
     }
     
     .cell.revealed {
       background: linear-gradient(135deg, #059669, #10b981);
       border-color: #34d399;
-      cursor: default;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
     }
     
     .cell.mine {
       background: linear-gradient(135deg, #dc2626, #ef4444);
       border-color: #f87171;
-      cursor: default;
       animation: explode 0.4s ease;
     }
     
     @keyframes explode {
       0% { transform: scale(1); }
-      50% { transform: scale(1.3); background: #fbbf24; }
+      50% { transform: scale(1.2); background: #fbbf24; }
       100% { transform: scale(1); }
     }
     
@@ -210,95 +246,78 @@
       border-color: #fbbf24;
     }
     
-    .cell.disabled {
-      cursor: default;
+    .cell.hint-highlight {
+      box-shadow: inset 0 0 0 2px #fff;
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     
     .btn {
-      margin-top: 18px;
-      padding: 14px 35px;
-      background: linear-gradient(135deg, #7c3aed, #a855f7, #c084fc);
+      padding: 14px 24px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
       color: white;
       border: none;
-      border-radius: 30px;
-      font-size: 1.1rem;
+      border-radius: 25px;
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+      transition: all 0.2s;
       border: 2px solid rgba(255,255,255,0.2);
+      min-width: 120px;
     }
     
-    .btn:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5);
+    .btn:active {
+      transform: scale(0.95);
+    }
+    
+    .btn.new-art {
+      background: linear-gradient(135deg, #0891b2, #06b6d4);
     }
     
     .final-art {
-      margin-top: 20px;
+      margin-top: 15px;
       background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-      border-radius: 20px;
-      padding: 20px;
+      border-radius: 15px;
+      padding: 15px;
       text-align: center;
       border: 2px solid rgba(255,255,255,0.3);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
       animation: popIn 0.5s ease;
     }
     
     .final-art p {
-      margin-bottom: 15px;
-      font-size: 1rem;
+      margin-bottom: 10px;
       font-weight: bold;
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
     }
     
     .pixel-grid {
       display: inline-grid;
-      grid-template-columns: repeat(16, 14px);
+      grid-template-columns: repeat(15, clamp(10px, 2.5vw, 14px));
       gap: 1px;
       background: rgba(0,0,0,0.3);
-      padding: 5px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      padding: 4px;
+      border-radius: 8px;
     }
     
     .pixel {
-      width: 14px;
-      height: 14px;
-      border-radius: 2px;
-      transition: all 0.3s;
-    }
-    
-    .pixel.petal {
-      background: linear-gradient(135deg, #f472b6, #ec4899);
-      box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
-    }
-    
-    .pixel.center {
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
-    }
-    
-    .pixel.stem {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
-    }
-    
-    .pixel.leaf {
-      background: linear-gradient(135deg, #4ade80, #22c55e);
-      box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
-    }
-    
-    .pixel.empty {
-      background: rgba(30, 27, 75, 0.8);
+      width: clamp(10px, 2.5vw, 14px);
+      height: clamp(10px, 2.5vw, 14px);
+      border-radius: 1px;
     }
     
     .hearts {
       display: flex;
-      gap: 3px;
+      gap: 2px;
     }
     
     .heart {
-      font-size: 1.2rem;
+      font-size: clamp(1rem, 4vw, 1.2rem);
       transition: all 0.3s;
     }
     
@@ -313,14 +332,48 @@
     
     @keyframes heartPop {
       0% { transform: scale(1); }
-      50% { transform: scale(1.5); }
+      50% { transform: scale(1.4); }
       100% { transform: scale(1); }
+    }
+
+    /* Landscape mode adjustments */
+    @media (orientation: landscape) and (max-height: 500px) {
+      body {
+        padding: 5px;
+      }
+      h1 {
+        font-size: 1.1rem;
+        margin-bottom: 2px;
+      }
+      .subtitle {
+        display: none;
+      }
+      .stats, .mode-toggle {
+        margin-bottom: 5px;
+      }
+      .game-container {
+        padding: 5px;
+      }
+    }
+
+    /* Small phones */
+    @media (max-width: 360px) {
+      .mode-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+      .btn {
+        padding: 12px 18px;
+        min-width: 100px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>🌸 Çiçek Nonogram Mayın Tarlası 💣</h1>
-  <p class="subtitle">💕 ikbalicokseviyorum.com için özel yapım 💕</p>
+  <h1>🎮 Pixel Nonogram Mayın 💣</h1>
+  <p class="subtitle">💕 ikbalicokseviyorum.com 💕</p>
+  
+  <div class="current-art" id="currentArt">🌸 Çiçek</div>
   
   <div class="stats">
     <div class="stat-box lives">
@@ -331,13 +384,18 @@
       </div>
     </div>
     <div class="stat-box progress">
-      <span>🌸</span>
+      <span>✨</span>
       <span id="progress">0</span>/<span id="total">0</span>
     </div>
   </div>
   
-  <div class="instructions">
-    🖱️ Sol tık = Aç | 🖱️ Sağ tık = 🚩 Bayrak | 💚 Yeşil = +1 ❤️ | 💥 Kırmızı = -1 ❤️
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modeOpen" onclick="setMode('open')">👆 Aç</button>
+    <button class="mode-btn" id="modeFlag" onclick="setMode('flag')">🚩 Bayrak</button>
+  </div>
+  
+  <div class="instructions" id="instructions">
+    👆 Tıkla = Aç | 🚩 Mod ile bayrak koy
   </div>
   
   <div id="message"></div>
@@ -346,43 +404,280 @@
     <div class="game-grid" id="gameGrid"></div>
   </div>
   
-  <button class="btn" onclick="resetGame()">🔄 Yeniden Başla</button>
+  <div class="buttons">
+    <button class="btn" onclick="resetGame()">🔄 Tekrar</button>
+    <button class="btn new-art" onclick="newRandomArt()">🎲 Yeni</button>
+  </div>
   
   <div id="finalArt" class="final-art" style="display: none;">
-    <p>🎨 Ortaya çıkan çiçek 🌸</p>
+    <p>🎨 Ortaya çıkan resim:</p>
     <div class="pixel-grid" id="pixelArt"></div>
   </div>
 
   <script>
-    // Çiçek pixel art - 16x16 
-    // 0 = boş, 1 = taç yaprak, 2 = çiçek merkezi, 3 = sap, 4 = yaprak
-    const FLOWER_COLORS = [
-      [0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0],
-      [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0],
-      [0,0,0,0,1,1,1,2,1,1,1,0,0,0,0,0],
-      [0,0,0,1,1,1,2,2,2,1,1,1,0,0,0,0],
-      [0,0,1,1,1,2,2,2,2,2,1,1,1,0,0,0],
-      [0,0,1,1,2,2,2,2,2,2,2,1,1,0,0,0],
-      [0,0,1,1,1,2,2,2,2,2,1,1,1,0,0,0],
-      [0,0,0,1,1,1,2,2,2,1,1,1,0,0,0,0],
-      [0,0,0,0,1,1,1,3,1,1,1,0,0,0,0,0],
-      [0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0],
-      [0,0,0,0,4,4,0,3,0,0,0,0,0,0,0,0],
-      [0,0,0,4,4,4,4,3,0,0,0,0,0,0,0,0],
-      [0,0,0,0,4,4,0,3,0,4,4,0,0,0,0,0],
-      [0,0,0,0,0,0,0,3,4,4,4,4,0,0,0,0],
-      [0,0,0,0,0,0,0,3,0,4,4,0,0,0,0,0],
+    // Renk paleti
+    const COLORS = {
+      0: { bg: 'rgba(30,27,75,0.8)' },
+      1: { bg: 'linear-gradient(135deg, #f472b6, #ec4899)' },
+      2: { bg: 'linear-gradient(135deg, #fbbf24, #f59e0b)' },
+      3: { bg: 'linear-gradient(135deg, #22c55e, #16a34a)' },
+      4: { bg: 'linear-gradient(135deg, #84cc16, #65a30d)' },
+      5: { bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
+      6: { bg: 'linear-gradient(135deg, #9ca3af, #6b7280)' },
+      7: { bg: 'linear-gradient(135deg, #ef4444, #dc2626)' },
+      8: { bg: 'linear-gradient(135deg, #a855f7, #9333ea)' },
+      9: { bg: 'linear-gradient(135deg, #fb923c, #f97316)' },
+      10: { bg: 'linear-gradient(135deg, #a16207, #854d0e)' },
+      11: { bg: 'linear-gradient(135deg, #22d3ee, #06b6d4)' },
+      12: { bg: 'linear-gradient(135deg, #f8fafc, #e2e8f0)' },
+    };
+
+    // 10 PIXEL ART - 15x15
+    const PIXEL_ARTS = [
+      {
+        name: "🌸 Çiçek",
+        art: [
+          [0,0,0,0,0,0,1,1,1,0,0,0,0,0,0],
+          [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
+          [0,0,0,0,1,1,2,2,2,1,1,0,0,0,0],
+          [0,0,0,1,1,2,2,2,2,2,1,1,0,0,0],
+          [0,0,1,1,2,2,2,2,2,2,2,1,1,0,0],
+          [0,0,1,1,2,2,2,2,2,2,2,1,1,0,0],
+          [0,0,0,1,1,2,2,2,2,2,1,1,0,0,0],
+          [0,0,0,0,1,1,2,2,2,1,1,0,0,0,0],
+          [0,0,0,0,0,0,0,3,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,3,0,0,0,0,0,0,0],
+          [0,0,0,0,4,4,0,3,0,0,0,0,0,0,0],
+          [0,0,0,4,4,4,4,3,0,0,0,0,0,0,0],
+          [0,0,0,0,4,4,0,3,0,4,4,0,0,0,0],
+          [0,0,0,0,0,0,0,3,4,4,4,4,0,0,0],
+          [0,0,0,0,0,0,0,3,0,4,4,0,0,0,0],
+        ]
+      },
+      {
+        name: "🤖 Robot",
+        art: [
+          [0,0,0,0,0,0,2,0,0,0,0,0,0,0,0],
+          [0,0,0,0,6,6,6,6,6,6,6,0,0,0,0],
+          [0,0,0,6,6,6,6,6,6,6,6,6,0,0,0],
+          [0,0,0,6,5,5,6,6,6,5,5,6,0,0,0],
+          [0,0,0,6,5,12,6,6,6,12,5,6,0,0,0],
+          [0,0,0,6,6,6,6,6,6,6,6,6,0,0,0],
+          [0,0,0,6,6,7,7,7,7,7,6,6,0,0,0],
+          [0,0,0,0,6,6,6,6,6,6,6,0,0,0,0],
+          [0,0,6,6,6,6,6,6,6,6,6,6,6,0,0],
+          [0,0,6,6,6,5,5,5,5,5,6,6,6,0,0],
+          [0,0,6,6,6,6,6,6,6,6,6,6,6,0,0],
+          [0,0,0,0,6,6,6,6,6,6,6,0,0,0,0],
+          [0,0,0,0,6,6,0,0,0,6,6,0,0,0,0],
+          [0,0,0,0,6,6,0,0,0,6,6,0,0,0,0],
+          [0,0,0,6,6,6,0,0,0,6,6,6,0,0,0],
+        ]
+      },
+      {
+        name: "🐱 Kedi",
+        art: [
+          [0,0,9,9,0,0,0,0,0,0,0,9,9,0,0],
+          [0,0,9,9,9,0,0,0,0,0,9,9,9,0,0],
+          [0,0,9,9,9,9,9,9,9,9,9,9,9,0,0],
+          [0,9,9,9,9,9,9,9,9,9,9,9,9,9,0],
+          [0,9,9,3,3,9,9,9,9,9,3,3,9,9,0],
+          [0,9,9,3,3,9,9,9,9,9,3,3,9,9,0],
+          [0,9,9,9,9,9,9,1,9,9,9,9,9,9,0],
+          [0,9,9,9,9,9,1,1,1,9,9,9,9,9,0],
+          [0,9,9,9,6,6,6,6,6,6,6,9,9,9,0],
+          [0,0,9,9,9,9,9,9,9,9,9,9,9,0,0],
+          [0,0,0,9,9,9,9,9,9,9,9,9,0,0,0],
+          [0,0,0,0,9,9,9,9,9,9,9,0,0,0,0],
+          [0,0,0,0,0,9,9,9,9,9,0,0,0,0,0],
+          [0,0,0,0,0,0,9,9,9,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,9,0,0,0,0,0,0,0],
+        ]
+      },
+      {
+        name: "📚 Kitap",
+        art: [
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,5,5,5,5,5,5,5,5,5,5,5,0,0],
+          [0,5,5,5,5,5,5,5,5,5,5,5,5,5,0],
+          [0,5,12,12,12,12,12,12,12,12,12,12,12,5,0],
+          [0,5,12,12,12,12,12,12,12,12,12,12,12,5,0],
+          [0,5,12,7,7,7,7,7,7,7,12,12,12,5,0],
+          [0,5,12,12,12,12,12,12,12,12,12,12,12,5,0],
+          [0,5,12,7,7,7,7,7,7,7,7,12,12,5,0],
+          [0,5,12,12,12,12,12,12,12,12,12,12,12,5,0],
+          [0,5,12,7,7,7,7,7,12,12,12,12,12,5,0],
+          [0,5,12,12,12,12,12,12,12,12,12,12,12,5,0],
+          [0,5,12,12,12,12,12,12,12,12,12,12,12,5,0],
+          [0,5,5,5,5,5,5,5,5,5,5,5,5,5,0],
+          [0,0,5,5,5,5,5,5,5,5,5,5,5,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        ]
+      },
+      {
+        name: "❤️ Kalp",
+        art: [
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,7,7,7,0,0,0,7,7,7,0,0,0],
+          [0,0,7,7,7,7,7,0,7,7,7,7,7,0,0],
+          [0,7,7,7,7,7,7,7,7,7,7,7,7,7,0],
+          [0,7,7,1,1,7,7,7,7,7,7,7,7,7,0],
+          [0,7,1,1,7,7,7,7,7,7,7,7,7,7,0],
+          [0,7,7,7,7,7,7,7,7,7,7,7,7,7,0],
+          [0,0,7,7,7,7,7,7,7,7,7,7,7,0,0],
+          [0,0,0,7,7,7,7,7,7,7,7,7,0,0,0],
+          [0,0,0,0,7,7,7,7,7,7,7,0,0,0,0],
+          [0,0,0,0,0,7,7,7,7,7,0,0,0,0,0],
+          [0,0,0,0,0,0,7,7,7,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,7,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        ]
+      },
+      {
+        name: "⭐ Yıldız",
+        art: [
+          [0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0],
+          [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0],
+          [0,2,2,2,2,2,2,2,2,2,2,2,2,2,0],
+          [0,0,2,2,2,2,2,2,2,2,2,2,2,0,0],
+          [0,0,0,2,2,2,2,2,2,2,2,2,0,0,0],
+          [0,0,0,0,2,2,2,2,2,2,2,0,0,0,0],
+          [0,0,0,0,2,2,2,2,2,2,2,0,0,0,0],
+          [0,0,0,2,2,2,2,2,2,2,2,2,0,0,0],
+          [0,0,2,2,2,2,0,0,0,2,2,2,2,0,0],
+          [0,2,2,2,2,0,0,0,0,0,2,2,2,2,0],
+          [0,2,2,2,0,0,0,0,0,0,0,2,2,2,0],
+          [0,2,2,0,0,0,0,0,0,0,0,0,2,2,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        ]
+      },
+      {
+        name: "🌳 Ağaç",
+        art: [
+          [0,0,0,0,0,0,3,3,3,0,0,0,0,0,0],
+          [0,0,0,0,0,3,3,3,3,3,0,0,0,0,0],
+          [0,0,0,0,3,3,3,3,3,3,3,0,0,0,0],
+          [0,0,0,3,3,3,3,3,3,3,3,3,0,0,0],
+          [0,0,0,0,3,3,3,3,3,3,3,0,0,0,0],
+          [0,0,0,0,0,3,3,3,3,3,0,0,0,0,0],
+          [0,0,0,3,3,3,3,3,3,3,3,3,0,0,0],
+          [0,0,3,3,3,3,3,3,3,3,3,3,3,0,0],
+          [0,0,0,3,3,3,3,3,3,3,3,3,0,0,0],
+          [0,0,0,0,3,3,3,3,3,3,3,0,0,0,0],
+          [0,0,0,0,0,0,10,10,10,0,0,0,0,0,0],
+          [0,0,0,0,0,0,10,10,10,0,0,0,0,0,0],
+          [0,0,0,0,0,0,10,10,10,0,0,0,0,0,0],
+          [0,0,0,0,0,0,10,10,10,0,0,0,0,0,0],
+          [0,0,0,0,3,3,3,3,3,3,3,0,0,0,0],
+        ]
+      },
+      {
+        name: "🏠 Ev",
+        art: [
+          [0,0,0,0,0,0,0,7,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,7,7,7,0,0,0,0,0,0],
+          [0,0,0,0,0,7,7,7,7,7,0,0,0,0,0],
+          [0,0,0,0,7,7,7,7,7,7,7,0,0,0,0],
+          [0,0,0,7,7,7,7,7,7,7,7,7,0,0,0],
+          [0,0,7,7,7,7,7,7,7,7,7,7,7,0,0],
+          [0,0,2,2,2,2,2,2,2,2,2,2,2,0,0],
+          [0,0,2,11,11,2,2,2,2,2,2,2,2,0,0],
+          [0,0,2,11,11,2,2,2,2,10,10,2,2,0,0],
+          [0,0,2,2,2,2,2,2,2,10,10,2,2,0,0],
+          [0,0,2,2,2,2,2,2,2,10,10,2,2,0,0],
+          [0,0,2,2,2,2,2,2,2,10,10,2,2,0,0],
+          [0,0,2,2,2,2,2,2,2,2,2,2,2,0,0],
+          [0,3,3,3,3,3,3,3,3,3,3,3,3,3,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        ]
+      },
+      {
+        name: "☀️ Güneş",
+        art: [
+          [0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
+          [0,0,2,0,0,0,0,2,0,0,0,0,2,0,0],
+          [0,0,0,2,0,0,0,2,0,0,0,2,0,0,0],
+          [0,0,0,0,0,2,2,2,2,2,0,0,0,0,0],
+          [0,0,0,0,2,2,2,2,2,2,2,0,0,0,0],
+          [0,0,0,2,2,2,2,2,2,2,2,2,0,0,0],
+          [0,2,2,2,2,2,2,2,2,2,2,2,2,2,0],
+          [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+          [0,2,2,2,2,2,2,2,2,2,2,2,2,2,0],
+          [0,0,0,2,2,2,2,2,2,2,2,2,0,0,0],
+          [0,0,0,0,2,2,2,2,2,2,2,0,0,0,0],
+          [0,0,0,0,0,2,2,2,2,2,0,0,0,0,0],
+          [0,0,0,2,0,0,0,2,0,0,0,2,0,0,0],
+          [0,0,2,0,0,0,0,2,0,0,0,0,2,0,0],
+          [0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
+        ]
+      },
+      {
+        name: "🦋 Kelebek",
+        art: [
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,8,8,8,0,0,0,0,0,0,0,8,8,8,0],
+          [8,8,8,8,8,0,0,0,0,0,8,8,8,8,8],
+          [8,8,1,1,8,8,0,0,0,8,8,1,1,8,8],
+          [8,8,1,1,8,8,0,6,0,8,8,1,1,8,8],
+          [8,8,8,8,8,8,0,6,0,8,8,8,8,8,8],
+          [0,8,8,8,8,0,0,6,0,0,8,8,8,8,0],
+          [0,0,8,8,0,0,0,6,0,0,0,8,8,0,0],
+          [0,8,8,8,8,0,0,6,0,0,8,8,8,8,0],
+          [8,8,8,8,8,8,0,6,0,8,8,8,8,8,8],
+          [8,8,2,2,8,8,0,6,0,8,8,2,2,8,8],
+          [8,8,2,2,8,8,0,0,0,8,8,2,2,8,8],
+          [8,8,8,8,8,0,0,0,0,0,8,8,8,8,8],
+          [0,8,8,8,0,0,0,0,0,0,0,8,8,8,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        ]
+      }
     ];
-    
-    // Binary version for game logic (1 = filled, 0 = empty/mine)
-    const FLOWER = FLOWER_COLORS.map(row => row.map(cell => cell > 0 ? 1 : 0));
-    
+
+    let currentArtIndex = 0;
+    let currentArt = null;
+    let binaryArt = [];
     let playerGrid = [];
     let lives = 3;
     let revealed = 0;
     let totalToReveal = 0;
     let gameState = 'playing';
+    let currentMode = 'open'; // 'open' or 'flag'
+
+    // Calculate cell size based on screen
+    function calculateCellSize() {
+      const screenWidth = window.innerWidth;
+      const maxGridWidth = screenWidth - 80; // padding + hints
+      const cellSize = Math.floor(maxGridWidth / 15);
+      return Math.min(Math.max(cellSize, 18), 28); // min 18px, max 28px
+    }
+
+    function updateCellSize() {
+      const size = calculateCellSize();
+      document.documentElement.style.setProperty('--cell-size', size + 'px');
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('modeOpen').classList.toggle('active', mode === 'open');
+      document.getElementById('modeFlag').classList.toggle('active', mode === 'flag');
+      
+      const instructions = document.getElementById('instructions');
+      if (mode === 'open') {
+        instructions.textContent = '👆 Tıkla = Kareyi Aç | 🚩 Bayrak moduna geç';
+      } else {
+        instructions.textContent = '🚩 Tıkla = Bayrak Koy | 👆 Aç moduna geç';
+      }
+    }
+
+    function selectRandomArt() {
+      currentArtIndex = Math.floor(Math.random() * PIXEL_ARTS.length);
+      currentArt = PIXEL_ARTS[currentArtIndex];
+      binaryArt = currentArt.art.map(row => row.map(cell => cell > 0 ? 1 : 0));
+      document.getElementById('currentArt').textContent = currentArt.name;
+    }
     
     function updateHeartsDisplay() {
       const container = document.getElementById('heartsDisplay');
@@ -443,12 +738,13 @@
     }
     
     function createGrid() {
-      const { rowHints, colHints } = generateHints(FLOWER);
+      updateCellSize();
+      const { rowHints, colHints } = generateHints(binaryArt);
       const gameGrid = document.getElementById('gameGrid');
       gameGrid.innerHTML = '';
       
       totalToReveal = 0;
-      FLOWER.forEach(row => row.forEach(cell => { if (cell === 1) totalToReveal++; }));
+      binaryArt.forEach(row => row.forEach(cell => { if (cell === 1) totalToReveal++; }));
       document.getElementById('total').textContent = totalToReveal;
       
       const headerRow = document.createElement('div');
@@ -475,7 +771,7 @@
       headerRow.appendChild(colHintsContainer);
       gameGrid.appendChild(headerRow);
       
-      for (let y = 0; y < 16; y++) {
+      for (let y = 0; y < 15; y++) {
         playerGrid[y] = [];
         const row = document.createElement('div');
         row.className = 'row';
@@ -489,18 +785,82 @@
         });
         row.appendChild(rowHint);
         
-        for (let x = 0; x < 16; x++) {
+        for (let x = 0; x < 15; x++) {
           playerGrid[y][x] = 0;
           const cell = document.createElement('div');
           cell.className = 'cell';
           cell.dataset.row = y;
           cell.dataset.col = x;
-          cell.onclick = (e) => handleClick(y, x, false);
-          cell.oncontextmenu = (e) => { e.preventDefault(); handleClick(y, x, true); };
+          
+          // Touch & click handler
+          cell.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleCellAction(y, x);
+          });
+          
           row.appendChild(cell);
         }
         
         gameGrid.appendChild(row);
+      }
+    }
+    
+    function handleCellAction(row, col) {
+      if (gameState !== 'playing') return;
+      
+      const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+      if (playerGrid[row][col] === 1 || playerGrid[row][col] === 2) return;
+      
+      if (currentMode === 'flag') {
+        // Bayrak modu
+        if (playerGrid[row][col] === 3) {
+          playerGrid[row][col] = 0;
+          cell.className = 'cell';
+          cell.textContent = '';
+        } else if (playerGrid[row][col] === 0) {
+          playerGrid[row][col] = 3;
+          cell.className = 'cell flagged';
+          cell.textContent = '🚩';
+        }
+        return;
+      }
+      
+      // Açma modu
+      if (playerGrid[row][col] === 3) return; // Bayraklıyı açamaz
+      
+      if (binaryArt[row][col] === 1) {
+        // Doğru!
+        playerGrid[row][col] = 1;
+        cell.className = 'cell revealed';
+        cell.textContent = '';
+        revealed++;
+        document.getElementById('progress').textContent = revealed;
+        
+        if (lives < 3) {
+          lives++;
+          updateHeartsDisplay();
+          animateHeartGain();
+          showTempMessage('heal', '💚 +1 Can!');
+        }
+        
+        if (revealed === totalToReveal) {
+          gameState = 'won';
+          showTempMessage('won', '🎉 Tebrikler! ' + currentArt.name);
+          showFinalArt();
+        }
+      } else {
+        // Mayın!
+        playerGrid[row][col] = 2;
+        cell.className = 'cell mine';
+        cell.textContent = '💥';
+        lives--;
+        updateHeartsDisplay();
+        
+        if (lives <= 0) {
+          gameState = 'lost';
+          showTempMessage('lost', '💥 Canların bitti!');
+          revealAllMines();
+        }
       }
     }
     
@@ -515,72 +875,14 @@
             msg.className = '';
             msg.textContent = '';
           }
-        }, 1500);
-      }
-    }
-    
-    function handleClick(row, col, isRightClick) {
-      if (gameState !== 'playing') return;
-      
-      const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-      if (playerGrid[row][col] === 1 || playerGrid[row][col] === 2) return;
-      
-      if (isRightClick) {
-        if (playerGrid[row][col] === 3) {
-          playerGrid[row][col] = 0;
-          cell.className = 'cell';
-          cell.textContent = '';
-        } else {
-          playerGrid[row][col] = 3;
-          cell.className = 'cell flagged';
-          cell.textContent = '🚩';
-        }
-        return;
-      }
-      
-      if (playerGrid[row][col] === 3) return;
-      
-      if (FLOWER[row][col] === 1) {
-        // Doğru! +1 can (max 3)
-        playerGrid[row][col] = 1;
-        cell.className = 'cell revealed';
-        cell.textContent = '';
-        revealed++;
-        document.getElementById('progress').textContent = revealed;
-        
-        // Can kazanma (max 3)
-        if (lives < 3) {
-          lives++;
-          updateHeartsDisplay();
-          animateHeartGain();
-          showTempMessage('heal', '💚 +1 Can!');
-        }
-        
-        if (revealed === totalToReveal) {
-          gameState = 'won';
-          showTempMessage('won', '🎉🌸🎉 Tebrikler! Çiçeği buldun!');
-          showFinalArt();
-        }
-      } else {
-        // Mayın! 💥
-        playerGrid[row][col] = 2;
-        cell.className = 'cell mine';
-        cell.textContent = '💥';
-        lives--;
-        updateHeartsDisplay();
-        
-        if (lives <= 0) {
-          gameState = 'lost';
-          showTempMessage('lost', '💥😢💥 Boom! Tüm canların bitti!');
-          revealAllMines();
-        }
+        }, 1200);
       }
     }
     
     function revealAllMines() {
-      for (let y = 0; y < 16; y++) {
-        for (let x = 0; x < 16; x++) {
-          if (FLOWER[y][x] === 0 && playerGrid[y][x] === 0) {
+      for (let y = 0; y < 15; y++) {
+        for (let x = 0; x < 15; x++) {
+          if (binaryArt[y][x] === 0 && playerGrid[y][x] === 0) {
             const cell = document.querySelector(`[data-row="${y}"][data-col="${x}"]`);
             cell.className = 'cell mine';
             cell.textContent = '💣';
@@ -594,17 +896,17 @@
       const pixelArt = document.getElementById('pixelArt');
       pixelArt.innerHTML = '';
       
-      const colorClasses = ['empty', 'petal', 'center', 'stem', 'leaf'];
-      
-      FLOWER_COLORS.forEach(row => {
+      currentArt.art.forEach(row => {
         row.forEach(cell => {
           const pixel = document.createElement('div');
-          pixel.className = `pixel ${colorClasses[cell]}`;
+          pixel.className = 'pixel';
+          pixel.style.background = COLORS[cell].bg;
           pixelArt.appendChild(pixel);
         });
       });
       
       container.style.display = 'block';
+      container.scrollIntoView({ behavior: 'smooth' });
     }
     
     function resetGame() {
@@ -622,9 +924,32 @@
       createGrid();
     }
     
+    function newRandomArt() {
+      selectRandomArt();
+      resetGame();
+    }
+    
+    // Handle resize
+    window.addEventListener('resize', () => {
+      updateCellSize();
+    });
+    
+    // Prevent zoom on double tap
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+    
+    let lastTouchEnd = 0;
+    
     // Initialize
+    selectRandomArt();
     createGrid();
     updateHeartsDisplay();
+    setMode('open');
   </script>
 </body>
 </html>
